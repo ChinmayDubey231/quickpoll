@@ -7,3 +7,4 @@ server/.env
 dist/
 client/dist/node_modules/
 .env
+*.tsbuildinfo
