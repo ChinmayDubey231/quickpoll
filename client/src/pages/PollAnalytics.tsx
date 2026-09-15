@@ -1,46 +1,42 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import api from "../utils/api.js";
-import Layout from "../components/Layout.jsx";
-import VoteTimelineChart from "../components/VoteTimelineChart.jsx";
-import LiveBarChart from "../components/LiveBarChart.jsx";
-import QRCode from "../components/QRCode.jsx";
-import Spinner from "../components/shared/Spinner.jsx";
-
-const OPTION_COLORS = [
-  "#cdbdff",
-  "#44ddc1",
-  "#bdc2ff",
-  "#ffb4ab",
-  "#cdbdff",
-  "#44ddc1",
-];
+import { isAxiosError } from "axios";
+import api from "../utils/api";
+import Layout from "../components/Layout";
+import VoteTimelineChart from "../components/VoteTimelineChart";
+import LiveBarChart from "../components/LiveBarChart";
+import IrvRoundsChart from "../components/IrvRoundsChart";
+import QRCode from "../components/QRCode";
+import SkeletonCard from "../components/shared/SkeletonCard";
+import ErrorState from "../components/shared/ErrorState";
+import { seriesColors } from "../utils/chartTheme";
+import type { PollDTO, AnalyticsDTO, OptionCountDTO } from "../types/api";
 
 export default function PollAnalytics() {
-  const { id: pollId } = useParams();
-  const [poll, setPoll] = useState(null);
-  const [analytics, setAnalytics] = useState(null);
-  const [counts, setCounts] = useState([]);
+  const { id: pollId } = useParams<{ id: string }>();
+  const [poll, setPoll] = useState<PollDTO | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsDTO | null>(null);
+  const [counts, setCounts] = useState<OptionCountDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [closing, setClosing] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    if (!pollId) return;
     const load = async () => {
       try {
         const [pollRes, analyticsRes, countsRes] = await Promise.all([
-          api.get(`/polls/${pollId}`),
-          api.get(`/polls/${pollId}/analytics`),
+          api.get<PollDTO>(`/polls/${pollId}`),
+          api.get<AnalyticsDTO>(`/polls/${pollId}/analytics`),
           api.get(`/votes/${pollId}`),
         ]);
         setPoll(pollRes.data);
         setAnalytics(analyticsRes.data);
         setCounts(countsRes.data.counts);
       } catch (err) {
-        const status = err.response?.status;
-        if (status === 403)
-          setError("You don't have access to this poll's analytics.");
+        const status = isAxiosError(err) ? err.response?.status : undefined;
+        if (status === 403) setError("You don't have access to this poll's analytics.");
         else if (status === 404) setError("Poll not found.");
         else setError("Failed to load analytics.");
       } finally {
@@ -54,11 +50,13 @@ export default function PollAnalytics() {
     setClosing(true);
     try {
       await api.patch(`/polls/${pollId}/close`);
-      setPoll((p) => ({ ...p, isOpen: false }));
+      setPoll((p) => (p ? { ...p, isOpen: false } : p));
     } finally {
       setClosing(false);
     }
   };
+
+  const shareUrl = `${window.location.origin}/poll/${pollId}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -69,33 +67,31 @@ export default function PollAnalytics() {
   if (loading)
     return (
       <Layout>
-        <Spinner className="mt-24" />
+        <div className="space-y-6 py-6">
+          <SkeletonCard lines={1} className="h-16" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SkeletonCard lines={2} />
+            <SkeletonCard lines={2} />
+            <SkeletonCard lines={2} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SkeletonCard lines={4} className="h-52" />
+            <SkeletonCard lines={4} className="h-52" />
+          </div>
+        </div>
       </Layout>
     );
 
   if (error)
     return (
       <Layout>
-        <div className="py-12">
-          <div className="px-4 py-3 bg-error-container/20 border border-error/30 rounded-xl text-sm text-error mb-4">
-            {error}
-          </div>
-          <Link
-            to="/dashboard"
-            className="text-sm text-primary hover:underline flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-[16px]">
-              arrow_back
-            </span>{" "}
-            Back to dashboard
-          </Link>
-        </div>
+        <ErrorState icon="error" title="Couldn't load analytics" description={error} backTo="/dashboard" backLabel="Back to dashboard" />
       </Layout>
     );
 
-  const shareUrl = `${window.location.origin}/poll/${pollId}`;
-  const isOpen =
-    poll?.isOpen && (!poll?.expiresAt || new Date(poll.expiresAt) > new Date());
+  if (!poll || !analytics) return null;
+
+  const isOpen = poll.isOpen && (!poll.expiresAt || new Date(poll.expiresAt) > new Date());
 
   return (
     <Layout>
@@ -106,7 +102,7 @@ export default function PollAnalytics() {
             <div className="flex items-center gap-3">
               <Link
                 to="/dashboard"
-                className="p-1 text-on-surface-variant hover:text-on-surface transition-colors"
+                className="p-1 text-on-surface-variant hover:text-on-surface transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <span className="material-symbols-outlined">arrow_back</span>
               </Link>
@@ -120,30 +116,31 @@ export default function PollAnalytics() {
                   Closed
                 </span>
               )}
+              {poll.pollType !== "single" && (
+                <span className="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant">
+                  {poll.pollType === "multi" ? "Multi-select" : "Ranked choice"}
+                </span>
+              )}
             </div>
             <h1 className="font-display font-bold text-2xl md:text-3xl text-on-surface leading-snug">
-              {poll?.question}
+              {poll.question}
             </h1>
           </div>
           <div className="flex gap-3 flex-shrink-0">
             <button
               onClick={copyLink}
-              className="flex items-center gap-2 px-4 py-2 border border-outline text-on-surface rounded-xl hover:bg-surface-container-high transition-all text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 border border-outline text-on-surface rounded-xl hover:bg-surface-container-high transition-all text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                share
-              </span>
+              <span className="material-symbols-outlined text-[18px]">share</span>
               Share
             </button>
             {isOpen && (
               <button
                 onClick={handleClose}
                 disabled={closing}
-                className="flex items-center gap-2 px-5 py-2 bg-error-container/20 text-error border border-error/30 rounded-xl hover:bg-error-container/40 transition-all text-sm font-medium disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-error-container/20 text-error border border-error/30 rounded-xl hover:bg-error-container/40 transition-all text-sm font-medium disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  block
-                </span>
+                <span className="material-symbols-outlined text-[18px]">block</span>
                 Close Poll
               </button>
             )}
@@ -166,7 +163,7 @@ export default function PollAnalytics() {
                 </span>
                 <button
                   onClick={copyLink}
-                  className="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs font-bold hover:scale-[0.98] transition-transform flex items-center gap-1.5 flex-shrink-0"
+                  className="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs font-bold hover:scale-[0.98] transition-transform flex items-center gap-1.5 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     {copied ? "check" : "content_copy"}
@@ -177,12 +174,9 @@ export default function PollAnalytics() {
                   href={shareUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="hidden sm:flex items-center gap-1 px-3 py-2 text-on-surface-variant hover:text-on-surface transition-colors text-xs font-mono"
+                  className="hidden sm:flex items-center gap-1 px-3 py-2 text-on-surface-variant hover:text-on-surface transition-colors text-xs font-mono rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  Open{" "}
-                  <span className="material-symbols-outlined text-[16px]">
-                    open_in_new
-                  </span>
+                  Open <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                 </a>
               </div>
             </div>
@@ -214,17 +208,12 @@ export default function PollAnalytics() {
               sub: "Busiest 15-min window",
             },
           ].map((s) => (
-            <div
-              key={s.label}
-              className="glass-card accent-glow rounded-xl p-6 group"
-            >
+            <div key={s.label} className="glass-card accent-glow rounded-xl p-6 group">
               <div className="flex justify-between items-start mb-4">
                 <span className="text-[10px] font-mono tracking-widest text-on-surface-variant uppercase">
                   {s.label}
                 </span>
-                <span
-                  className={`material-symbols-outlined text-[22px] ${s.color} group-hover:scale-110 transition-transform`}
-                >
+                <span className={`material-symbols-outlined text-[22px] ${s.color} group-hover:scale-110 transition-transform`}>
                   {s.icon}
                 </span>
               </div>
@@ -245,29 +234,19 @@ export default function PollAnalytics() {
                 Vote Distribution
               </h3>
               <div className="flex gap-1">
-                {OPTION_COLORS.slice(0, 3).map((c, i) => (
-                  <div
-                    key={i}
-                    className="w-3 h-3 rounded-sm"
-                    style={{ background: c }}
-                  />
+                {seriesColors.slice(0, 3).map((c, i) => (
+                  <div key={i} className="w-3 h-3 rounded-sm" style={{ background: c }} />
                 ))}
               </div>
             </div>
             <div className="space-y-4">
-              {poll?.options.map((opt, i) => {
-                const count =
-                  counts.find((c) => c.optionIndex === i)?.count ?? 0;
-                const pct =
-                  analytics.totalVotes > 0
-                    ? Math.round((count / analytics.totalVotes) * 100)
-                    : 0;
+              {poll.options.map((opt, i) => {
+                const count = counts.find((c) => c.optionIndex === i)?.count ?? 0;
+                const pct = analytics.totalVotes > 0 ? Math.round((count / analytics.totalVotes) * 100) : 0;
                 return (
                   <div key={i} className="space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span className="font-semibold text-on-surface">
-                        {opt.text}
-                      </span>
+                      <span className="font-semibold text-on-surface">{opt.text}</span>
                       <span className="text-on-surface-variant font-mono text-xs">
                         {count} votes · {pct}%
                       </span>
@@ -275,10 +254,7 @@ export default function PollAnalytics() {
                     <div className="h-2.5 bg-surface-container rounded-full overflow-hidden border border-outline-variant/30">
                       <div
                         className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${pct}%`,
-                          background: OPTION_COLORS[i % OPTION_COLORS.length],
-                        }}
+                        style={{ width: `${pct}%`, background: seriesColors[i % seriesColors.length] }}
                       />
                     </div>
                   </div>
@@ -293,26 +269,32 @@ export default function PollAnalytics() {
               <h3 className="font-display font-semibold text-lg text-on-surface">
                 Vote Timeline
               </h3>
-              <span className="text-xs font-mono text-on-surface-variant">
-                15-min buckets
-              </span>
+              <span className="text-xs font-mono text-on-surface-variant">15-min buckets</span>
             </div>
             <VoteTimelineChart timeline={analytics.timeline} />
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-primary-container" />
-              <span className="text-xs text-on-surface-variant font-mono">
-                New Votes
-              </span>
+              <span className="text-xs text-on-surface-variant font-mono">New Votes</span>
             </div>
           </div>
         </section>
+
+        {/* Ranked-choice round breakdown */}
+        {poll.pollType === "ranked" && analytics.irv && (
+          <div className="glass-card rounded-xl p-6">
+            <h3 className="font-display font-semibold text-lg text-on-surface mb-5">
+              Instant-Runoff Rounds
+            </h3>
+            <IrvRoundsChart result={analytics.irv} options={poll.options} />
+          </div>
+        )}
 
         {/* Bar chart */}
         <div className="glass-card rounded-xl p-6">
           <h3 className="font-display font-semibold text-lg text-on-surface mb-5">
             Results Chart
           </h3>
-          {poll && <LiveBarChart options={poll.options} counts={counts} />}
+          <LiveBarChart options={poll.options} counts={counts} />
         </div>
 
         {/* Footer CTA */}
@@ -320,14 +302,10 @@ export default function PollAnalytics() {
           <footer className="bg-primary/5 border border-primary/20 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4 text-center md:text-left">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <span className="material-symbols-outlined text-primary">
-                  campaign
-                </span>
+                <span className="material-symbols-outlined text-primary">campaign</span>
               </div>
               <div>
-                <h4 className="font-display font-bold text-on-surface">
-                  Poll is still live
-                </h4>
+                <h4 className="font-display font-bold text-on-surface">Poll is still live</h4>
                 <p className="text-sm text-on-surface-variant mt-0.5">
                   Close it manually when you're done collecting responses.
                 </p>
@@ -336,7 +314,7 @@ export default function PollAnalytics() {
             <button
               onClick={handleClose}
               disabled={closing}
-              className="bg-primary-container text-on-primary-container font-display font-bold px-8 py-3 rounded-xl hover:scale-[0.98] active:scale-[0.96] transition-all disabled:opacity-50 whitespace-nowrap"
+              className="bg-primary-container text-on-primary-container font-display font-bold px-8 py-3 rounded-xl hover:scale-[0.98] active:scale-[0.96] transition-all disabled:opacity-50 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Close poll
             </button>
