@@ -1,30 +1,41 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api.js';
-import Layout from '../components/Layout.jsx';
+import { isAxiosError } from 'axios';
+import api from '../utils/api';
+import Layout from '../components/Layout';
+import ErrorMsg from '../components/shared/ErrorMsg';
+import type { PollType } from '../types/api';
 
 const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 6;
 const blankOption = () => ({ id: crypto.randomUUID(), text: '' });
 
+const POLL_TYPES: { value: PollType; label: string; description: string; icon: string }[] = [
+  { value: 'single', label: 'Single choice', description: 'Voters pick one option', icon: 'radio_button_checked' },
+  { value: 'multi', label: 'Multiple choice', description: 'Voters can pick several', icon: 'check_box' },
+  { value: 'ranked', label: 'Ranked choice', description: 'Voters rank every option', icon: 'sort' },
+];
+
 export default function CreatePoll() {
   const navigate = useNavigate();
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState([blankOption(), blankOption()]);
+  const [pollType, setPollType] = useState<PollType>('single');
+  const [isPublic, setIsPublic] = useState(false);
   const [expiresAt, setExpiresAt] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const updateOption = (id, text) =>
+  const updateOption = (id: string, text: string) =>
     setOptions(prev => prev.map(o => o.id === id ? { ...o, text } : o));
   const addOption = () => {
     if (options.length < MAX_OPTIONS) setOptions(prev => [...prev, blankOption()]);
   };
-  const removeOption = (id) => {
+  const removeOption = (id: string) => {
     if (options.length > MIN_OPTIONS) setOptions(prev => prev.filter(o => o.id !== id));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     const filled = options.map(o => o.text.trim()).filter(Boolean);
@@ -35,17 +46,22 @@ export default function CreatePoll() {
       await api.post('/polls', {
         question: question.trim(),
         options: filled,
+        pollType,
+        isPublic,
         expiresAt: expiresAt || undefined,
       });
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create poll');
+      const message = isAxiosError(err) ? err.response?.data?.message : undefined;
+      setError(message || 'Failed to create poll');
     } finally { setLoading(false); }
   };
 
   const minDatetime = new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16);
 
   const OPTION_COLORS = ['bg-primary-container', 'bg-secondary-container', 'bg-tertiary-container', 'bg-error-container', 'bg-primary-container', 'bg-secondary-container'];
+
+  const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
   return (
     <Layout>
@@ -57,11 +73,7 @@ export default function CreatePoll() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="px-4 py-3 bg-error-container/20 border border-error/30 rounded-xl text-sm text-error">
-              {error}
-            </div>
-          )}
+          <ErrorMsg message={error} />
 
           {/* Question */}
           <div className="glass-card rounded-xl p-6">
@@ -72,9 +84,40 @@ export default function CreatePoll() {
               value={question}
               onChange={e => setQuestion(e.target.value)}
               required maxLength={300} rows={3}
-              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all resize-none"
+              className={`w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all resize-none ${focusRing}`}
               placeholder="What would you like to ask?"
             />
+          </div>
+
+          {/* Poll type */}
+          <div className="glass-card rounded-xl p-6">
+            <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-3">
+              Poll type
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {POLL_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setPollType(t.value)}
+                  className={`text-left p-3 rounded-xl border transition-all ${focusRing} ${
+                    pollType === t.value
+                      ? 'border-primary/60 bg-primary/10'
+                      : 'border-outline-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`material-symbols-outlined text-[18px] ${pollType === t.value ? 'text-primary' : 'text-on-surface-variant'}`}>
+                      {t.icon}
+                    </span>
+                    <span className={`text-sm font-semibold ${pollType === t.value ? 'text-primary' : 'text-on-surface'}`}>
+                      {t.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant">{t.description}</p>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Options */}
@@ -86,7 +129,7 @@ export default function CreatePoll() {
               {options.length < MAX_OPTIONS && (
                 <button
                   type="button" onClick={addOption}
-                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-mono font-bold transition-colors"
+                  className={`flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-mono font-bold transition-colors rounded ${focusRing}`}
                 >
                   <span className="material-symbols-outlined text-[16px]">add_circle</span>
                   Add option
@@ -104,13 +147,13 @@ export default function CreatePoll() {
                     type="text" value={opt.text}
                     onChange={e => updateOption(opt.id, e.target.value)}
                     maxLength={100}
-                    className="flex-1 bg-surface-container border border-outline-variant rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all"
+                    className={`flex-1 bg-surface-container border border-outline-variant rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
                     placeholder={`Option ${idx + 1}`}
                   />
                   {options.length > MIN_OPTIONS && (
                     <button
                       type="button" onClick={() => removeOption(opt.id)}
-                      className="p-1.5 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all"
+                      className={`p-1.5 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
                     >
                       <span className="material-symbols-outlined text-[18px]">close</span>
                     </button>
@@ -118,6 +161,24 @@ export default function CreatePoll() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Visibility */}
+          <div className="glass-card rounded-xl p-6">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isPublic}
+                onChange={e => setIsPublic(e.target.checked)}
+                className={`mt-0.5 w-4 h-4 rounded border-outline-variant bg-surface-container accent-primary ${focusRing}`}
+              />
+              <span>
+                <span className="block text-sm font-semibold text-on-surface">List on public Discover page</span>
+                <span className="block text-xs text-on-surface-variant mt-0.5">
+                  Anyone can find and vote on this poll from the Discover page. Leave unchecked to only share via direct link.
+                </span>
+              </span>
+            </label>
           </div>
 
           {/* Expiry */}
@@ -128,7 +189,7 @@ export default function CreatePoll() {
             <input
               type="datetime-local" value={expiresAt} min={minDatetime}
               onChange={e => setExpiresAt(e.target.value)}
-              className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all [color-scheme:dark]"
+              className={`w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all [color-scheme:dark] ${focusRing}`}
             />
             <p className="text-xs text-on-surface-variant mt-2 font-mono">
               Leave blank to keep the poll open indefinitely
@@ -139,13 +200,13 @@ export default function CreatePoll() {
           <div className="flex gap-3">
             <button
               type="button" onClick={() => navigate('/dashboard')}
-              className="flex-1 py-3 border border-outline-variant text-on-surface-variant font-display font-bold rounded-xl hover:bg-surface-container-high transition-all text-sm"
+              className={`flex-1 py-3 border border-outline-variant text-on-surface-variant font-display font-bold rounded-xl hover:bg-surface-container-high transition-all text-sm ${focusRing}`}
             >
               Cancel
             </button>
             <button
               type="submit" disabled={loading}
-              className="flex-2 flex-grow-[2] py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.99] active:scale-[0.97] transition-all disabled:opacity-50 text-sm"
+              className={`flex-2 flex-grow-[2] py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.99] active:scale-[0.97] transition-all disabled:opacity-50 text-sm ${focusRing}`}
             >
               {loading ? 'Creating…' : 'Create Poll'}
             </button>

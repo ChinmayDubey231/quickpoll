@@ -1,14 +1,18 @@
+import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import Logo from "./Logo.jsx";
+import { useAuth } from "../context/AuthContext";
+import Logo from "./Logo";
 
 const navItems = [
   { icon: "dashboard", label: "Dashboard", path: "/dashboard" },
   { icon: "add_circle", label: "New Poll", path: "/create" },
+  { icon: "explore", label: "Discover", path: "/discover" },
 ];
 
-export default function Layout({ children }) {
-  const { user, logout } = useAuth();
+const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+
+export default function Layout({ children }: { children: ReactNode }) {
+  const { user, logout, isLoggedIn } = useAuth();
   const { pathname } = useLocation();
 
   const initials = user?.name
@@ -25,49 +29,40 @@ export default function Layout({ children }) {
       {/* Top nav */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-surface border-b border-outline-variant">
         {/* Logo + wordmark */}
-        <div className="flex items-center gap-2.5">
+        <Link to="/" className={`flex items-center gap-2.5 rounded-lg ${focusRing}`}>
           <Logo size={28} />
           <span className="font-display font-bold text-xl text-primary tracking-tight">
             QuickPoll
           </span>
-        </div>
-
-        {/* Center nav */}
-        <nav className="hidden items-center gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                pathname === item.path
-                  ? "text-primary bg-primary/10"
-                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        </Link>
 
         {/* Right — avatar first, then name, then logout on small screens */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs font-display flex-shrink-0">
-            {initials}
-          </div>
-          <span className="hidden sm:block text-sm text-on-surface-variant">
-            {user?.name}
-          </span>
-          <button
-            onClick={logout}
-            className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 text-sm text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              logout
-            </span>
-          </button>
+          {isLoggedIn ? (
+            <>
+              <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs font-display flex-shrink-0">
+                {initials}
+              </div>
+              <span className="hidden sm:block text-sm text-on-surface-variant">
+                {user?.name}
+              </span>
+              <button
+                onClick={logout}
+                className={`lg:hidden flex items-center gap-1 px-2.5 py-1.5 text-sm text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-colors ${focusRing}`}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  logout
+                </span>
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className={`px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors ${focusRing}`}
+            >
+              Log In
+            </Link>
+          )}
         </div>
       </header>
 
@@ -78,7 +73,7 @@ export default function Layout({ children }) {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${focusRing} ${
                 pathname === item.path
                   ? "text-secondary font-semibold bg-secondary-container/10 translate-x-0.5"
                   : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
@@ -102,23 +97,25 @@ export default function Layout({ children }) {
           <p className="text-xs text-on-surface-variant mb-3">
             Export detailed CSV reports for all polls.
           </p>
-          <button className="w-full py-2 bg-primary text-on-primary font-bold rounded-lg text-xs hover:scale-[0.98] transition-transform font-display">
+          <button className={`w-full py-2 bg-primary text-on-primary font-bold rounded-lg text-xs hover:scale-[0.98] transition-transform font-display ${focusRing}`}>
             Upgrade Pro
           </button>
         </div>
 
         {/* Logout */}
-        <div className="mt-3 pt-3 border-t border-outline-variant">
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:text-error w-full transition-colors rounded-lg hover:bg-surface-container-high text-sm"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              logout
-            </span>
-            <span className="font-mono text-xs tracking-wide">Sign Out</span>
-          </button>
-        </div>
+        {isLoggedIn && (
+          <div className="mt-3 pt-3 border-t border-outline-variant">
+            <button
+              onClick={logout}
+              className={`flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:text-error w-full transition-colors rounded-lg hover:bg-surface-container-high text-sm ${focusRing}`}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                logout
+              </span>
+              <span className="font-mono text-xs tracking-wide">Sign Out</span>
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* Main content */}
@@ -132,7 +129,7 @@ export default function Layout({ children }) {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-all ${
+            className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-all ${focusRing} ${
               pathname === item.path
                 ? "text-primary"
                 : "text-on-surface-variant hover:text-primary"
@@ -144,13 +141,15 @@ export default function Layout({ children }) {
             <span className="text-[10px] font-mono">{item.label}</span>
           </Link>
         ))}
-        <button
-          onClick={logout}
-          className="flex flex-col items-center gap-0.5 px-4 py-1 text-on-surface-variant hover:text-error transition-colors"
-        >
-          <span className="material-symbols-outlined text-[22px]">logout</span>
-          <span className="text-[10px] font-mono">Sign Out</span>
-        </button>
+        {isLoggedIn && (
+          <button
+            onClick={logout}
+            className={`flex flex-col items-center gap-0.5 px-4 py-1 text-on-surface-variant hover:text-error transition-colors ${focusRing}`}
+          >
+            <span className="material-symbols-outlined text-[22px]">logout</span>
+            <span className="text-[10px] font-mono">Sign Out</span>
+          </button>
+        )}
       </nav>
     </div>
   );
