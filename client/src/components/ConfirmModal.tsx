@@ -1,4 +1,11 @@
-export default function ConfirmModal({ title, message, onConfirm, onCancel }) {
+interface ConfirmModalProps {
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export default function ConfirmModal({ title, message, onConfirm, onCancel }: ConfirmModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       {/* Backdrop */}
@@ -22,13 +29,13 @@ export default function ConfirmModal({ title, message, onConfirm, onCancel }) {
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-2.5 border border-outline-variant text-on-surface-variant rounded-xl text-sm font-medium hover:bg-surface-container-high transition-all"
+            className="flex-1 py-2.5 border border-outline-variant text-on-surface-variant rounded-xl text-sm font-medium hover:bg-surface-container-high transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-2.5 bg-error-container/20 border border-error/30 text-error rounded-xl text-sm font-bold hover:bg-error-container/40 transition-all"
+            className="flex-1 py-2.5 bg-error-container/20 border border-error/30 text-error rounded-xl text-sm font-bold hover:bg-error-container/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
           >
             Delete
           </button>

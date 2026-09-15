@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosError } from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
 // If server returns 401, clear stale token and redirect to login
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  (err: AxiosError) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

@@ -1,8 +1,13 @@
 import { useEffect, useRef } from 'react';
 import QRCodeLib from 'qrcode';
 
-export default function QRCode({ url, size = 160 }) {
-  const canvasRef = useRef(null);
+interface QRCodeProps {
+  url: string;
+  size?: number;
+}
+
+export default function QRCode({ url, size = 160 }: QRCodeProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!canvasRef.current || !url) return;
