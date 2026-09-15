@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../utils/api.js";
-import Layout from "../components/Layout.jsx";
-import Spinner from "../components/shared/Spinner.jsx";
-import ConfirmModal from "../components/ConfirmModal.jsx";
-import EmptyState from "../components/shared/EmptyState.jsx";
+import { isAxiosError } from "axios";
+import api from "../utils/api";
+import Layout from "../components/Layout";
+import ConfirmModal from "../components/ConfirmModal";
+import EmptyState from "../components/shared/EmptyState";
+import SkeletonCard from "../components/shared/SkeletonCard";
+import ErrorMsg from "../components/shared/ErrorMsg";
+import { useToast } from "../context/ToastContext";
+import type { PollDTO } from "../types/api";
 
-const StatusBadge = ({ poll }) => {
+const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+
+const StatusBadge = ({ poll }: { poll: PollDTO }) => {
   if (!poll.isOpen)
     return (
       <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant rounded-full border border-outline-variant">
@@ -29,23 +35,23 @@ const StatusBadge = ({ poll }) => {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [polls, setPolls] = useState([]);
+  const { showToast } = useToast();
+  const [polls, setPolls] = useState<PollDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [closing, setClosing] = useState(null);
-  const [deleting, setDeleting] = useState(null);
-  const [copied, setCopied] = useState(null);
-  const [confirmId, setConfirmId] = useState(null);
+  const [closing, setClosing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     api
-      .get("/polls")
+      .get<PollDTO[]>("/polls")
       .then((r) => setPolls(r.data))
       .catch(() => setError("Failed to load polls"))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleClose = async (pollId) => {
+  const handleClose = async (pollId: string) => {
     setClosing(pollId);
     try {
       await api.patch(`/polls/${pollId}/close`);
@@ -53,29 +59,30 @@ export default function Dashboard() {
         prev.map((p) => (p._id === pollId ? { ...p, isOpen: false } : p)),
       );
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to close poll");
+      const message = isAxiosError(err) ? err.response?.data?.message : undefined;
+      setError(message || "Failed to close poll");
     } finally {
       setClosing(null);
     }
   };
 
-  const handleDelete = async (pollId) => {
+  const handleDelete = async (pollId: string) => {
     setConfirmId(null);
     setDeleting(pollId);
     try {
       await api.delete(`/polls/${pollId}`);
       setPolls((prev) => prev.filter((p) => p._id !== pollId));
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete poll");
+      const message = isAxiosError(err) ? err.response?.data?.message : undefined;
+      setError(message || "Failed to delete poll");
     } finally {
       setDeleting(null);
     }
   };
 
-  const copyLink = (pollId) => {
+  const copyLink = (pollId: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/poll/${pollId}`);
-    setCopied(pollId);
-    setTimeout(() => setCopied(null), 2000);
+    showToast("Link copied to clipboard", "success");
   };
 
   const totalVotes = loading
@@ -98,7 +105,7 @@ export default function Dashboard() {
           </div>
           <Link
             to="/create"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm ${focusRing}`}
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             New Poll
@@ -113,12 +120,14 @@ export default function Dashboard() {
               value: loading ? null : polls.length,
               icon: "ballot",
               color: "text-primary",
+              span: "",
             },
             {
               label: "Live Now",
               value: livePolls,
               icon: "sensors",
               color: "text-secondary",
+              span: "",
             },
             {
               label: "Total Votes",
@@ -130,15 +139,13 @@ export default function Dashboard() {
           ].map((s) => (
             <div
               key={s.label}
-              className={`glass-card accent-glow rounded-xl p-5 ${s.span || ""}`}
+              className={`glass-card accent-glow rounded-xl p-5 ${s.span}`}
             >
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-mono tracking-widest text-on-surface-variant uppercase">
                   {s.label}
                 </span>
-                <span
-                  className={`material-symbols-outlined text-[20px] ${s.color}`}
-                >
+                <span className={`material-symbols-outlined text-[20px] ${s.color}`}>
                   {s.icon}
                 </span>
               </div>
@@ -153,11 +160,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {error && (
-          <div className="px-4 py-3 bg-error-container/20 border border-error/30 rounded-xl text-sm text-error">
-            {error}
-          </div>
-        )}
+        <ErrorMsg message={error} />
 
         {/* Polls list */}
         <div>
@@ -165,7 +168,11 @@ export default function Dashboard() {
             My Polls
           </h2>
           {loading ? (
-            <Spinner className="mt-16" />
+            <div className="space-y-3">
+              <SkeletonCard lines={2} />
+              <SkeletonCard lines={2} />
+              <SkeletonCard lines={2} />
+            </div>
           ) : polls.length === 0 ? (
             <EmptyState
               title="No polls yet"
@@ -173,7 +180,7 @@ export default function Dashboard() {
               action={
                 <Link
                   to="/create"
-                  className="px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm inline-block mt-2"
+                  className={`px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm inline-block mt-2 ${focusRing}`}
                 >
                   Create a poll
                 </Link>
@@ -200,6 +207,12 @@ export default function Dashboard() {
                         <span className="text-[10px] font-mono text-on-surface-variant">
                           {poll.options.length} options
                         </span>
+                        {poll.isPublic && (
+                          <span className="text-[10px] font-mono text-on-surface-variant flex items-center gap-0.5">
+                            <span className="material-symbols-outlined text-[12px]">public</span>
+                            Public
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm font-semibold text-on-surface truncate">
                         {poll.question}
@@ -217,16 +230,16 @@ export default function Dashboard() {
                       <button
                         onClick={() => copyLink(poll._id)}
                         title="Copy share link"
-                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-all"
+                        className={`p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
                       >
                         <span className="material-symbols-outlined text-[18px]">
-                          {copied === poll._id ? "check" : "content_copy"}
+                          content_copy
                         </span>
                       </button>
                       <button
                         onClick={() => navigate(`/polls/${poll._id}/analytics`)}
                         title="Analytics"
-                        className="p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container-high rounded-lg transition-all"
+                        className={`p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
                       >
                         <span className="material-symbols-outlined text-[18px]">
                           leaderboard
@@ -239,7 +252,7 @@ export default function Dashboard() {
                             onClick={() => handleClose(poll._id)}
                             disabled={closing === poll._id}
                             title="Close poll"
-                            className="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40"
+                            className={`p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40 ${focusRing}`}
                           >
                             <span className="material-symbols-outlined text-[18px]">
                               block
@@ -250,7 +263,7 @@ export default function Dashboard() {
                         onClick={() => setConfirmId(poll._id)}
                         disabled={deleting === poll._id}
                         title="Delete"
-                        className="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40"
+                        className={`p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40 ${focusRing}`}
                       >
                         <span className="material-symbols-outlined text-[18px]">
                           delete
