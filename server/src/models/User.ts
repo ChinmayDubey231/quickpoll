@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
+import type { IUser } from "../types/models.js";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -31,7 +32,7 @@ userSchema.pre("save", async function () {
 });
 
 // Instance method to compare passwords
-userSchema.methods.comparePassword = async function (candidate) {
+userSchema.methods.comparePassword = async function (candidate: string) {
   return bcrypt.compare(candidate, this.password);
 };
 
@@ -42,5 +43,5 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<IUser>("User", userSchema);
 export default User;

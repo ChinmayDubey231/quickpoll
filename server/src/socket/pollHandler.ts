@@ -1,8 +1,14 @@
+import type { Server, Socket } from 'socket.io';
+import type { ClientToServerEvents, ServerToClientEvents } from '../types/socket.js';
+
+type AppServer = Server<ClientToServerEvents, ServerToClientEvents>;
+type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
+
 /**
  * registerPollHandlers — called for every new socket connection.
  * Keeps all socket logic in one place; io and socket are injected from index.js.
  */
-export const registerPollHandlers = (io, socket) => {
+export const registerPollHandlers = (_io: AppServer, socket: AppSocket) => {
   // ── join-poll ──────────────────────────────────────────────────────────────
   // Client emits this on PollView mount. Puts the socket into a room named by
   // pollId so vote-update and poll-closed are scoped to that poll only.

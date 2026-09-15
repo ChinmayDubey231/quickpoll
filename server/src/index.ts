@@ -6,6 +6,7 @@ import cors from 'cors';
 
 import connectDB from './config/db.js';
 import { setIO } from './config/socket.js';
+import type { ClientToServerEvents, ServerToClientEvents } from './types/socket.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -13,7 +14,7 @@ const httpServer = createServer(app);
 // ─── Socket.io ────────────────────────────────────────────────────────────────
 // Create io, register with the shared accessor so controllers and workers
 // can call getIO() without importing index.js (avoids circular ESM deps).
-const io = new Server(httpServer, {
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     methods: ['GET', 'POST'],

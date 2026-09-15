@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import type { IPoll } from '../types/models.js';
 
-const pollSchema = new mongoose.Schema(
+const pollSchema = new Schema<IPoll>(
   {
     creatorId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -25,9 +26,19 @@ const pollSchema = new mongoose.Schema(
         },
       ],
       validate: {
-        validator: (opts) => opts.length >= 2 && opts.length <= 6,
+        validator: (opts: unknown[]) => opts.length >= 2 && opts.length <= 6,
         message: 'A poll must have between 2 and 6 options',
       },
+    },
+    pollType: {
+      type: String,
+      enum: ['single', 'multi', 'ranked'],
+      default: 'single',
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
     expiresAt: {
       type: Date,
@@ -38,9 +49,19 @@ const pollSchema = new mongoose.Schema(
       default: true,
       index: true,
     },
+    totalVotesCache: {
+      type: Number,
+      default: 0,
+    },
+    finalResult: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-const Poll = mongoose.model('Poll', pollSchema);
+pollSchema.index({ isPublic: 1, isOpen: 1, createdAt: -1 });
+
+const Poll = mongoose.model<IPoll>('Poll', pollSchema);
 export default Poll;
