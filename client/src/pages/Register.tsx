@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import Logo from "../components/Logo.jsx";
+import { isAxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
+import Logo from "../components/Logo";
+import ErrorMsg from "../components/shared/ErrorMsg";
+
+const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+
+interface RegisterForm {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const FIELDS: { name: keyof RegisterForm; type: string; label: string; placeholder: string }[] = [
+  { name: "name", type: "text", label: "Name", placeholder: "Jane Smith" },
+  { name: "email", type: "email", label: "Email", placeholder: "you@example.com" },
+  { name: "password", type: "password", label: "Password", placeholder: "Min. 6 characters" },
+];
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState<RegisterForm>({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     if (form.password.length < 6)
@@ -23,7 +39,8 @@ export default function Register() {
       await register(form.name, form.email, form.password);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      const message = isAxiosError(err) ? err.response?.data?.message : undefined;
+      setError(message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -62,32 +79,13 @@ export default function Register() {
           </p>
 
           {error && (
-            <div className="mb-4 px-4 py-3 bg-error-container/20 border border-error/30 rounded-lg text-sm text-error">
-              {error}
+            <div className="mb-4">
+              <ErrorMsg message={error} />
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {[
-              {
-                name: "name",
-                type: "text",
-                label: "Name",
-                placeholder: "Jane Smith",
-              },
-              {
-                name: "email",
-                type: "email",
-                label: "Email",
-                placeholder: "you@example.com",
-              },
-              {
-                name: "password",
-                type: "password",
-                label: "Password",
-                placeholder: "Min. 6 characters",
-              },
-            ].map((field) => (
+            {FIELDS.map((field) => (
               <div key={field.name}>
                 <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
                   {field.label}
@@ -99,7 +97,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                   placeholder={field.placeholder}
-                  className="w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all"
+                  className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
                 />
               </div>
             ))}
@@ -107,7 +105,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-50 mt-2"
+              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-50 mt-2 ${focusRing}`}
             >
               {loading ? "Creating account…" : "Create account"}
             </button>

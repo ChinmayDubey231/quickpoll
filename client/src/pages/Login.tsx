@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import Logo from "../components/Logo.jsx";
+import { isAxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
+import Logo from "../components/Logo";
+import ErrorMsg from "../components/shared/ErrorMsg";
+
+const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
 export default function Login() {
   const { login } = useAuth();
@@ -10,10 +14,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -21,7 +25,8 @@ export default function Login() {
       await login(form.email, form.password);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      const message = isAxiosError(err) ? err.response?.data?.message : undefined;
+      setError(message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -60,8 +65,8 @@ export default function Login() {
           </p>
 
           {error && (
-            <div className="mb-4 px-4 py-3 bg-error-container/20 border border-error/30 rounded-lg text-sm text-error">
-              {error}
+            <div className="mb-4">
+              <ErrorMsg message={error} />
             </div>
           )}
 
@@ -77,7 +82,7 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all"
+                className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
               />
             </div>
             <div>
@@ -91,13 +96,13 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all"
+                className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-50 mt-2"
+              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-50 mt-2 ${focusRing}`}
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>

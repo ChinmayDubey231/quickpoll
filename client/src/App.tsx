@@ -1,14 +1,17 @@
+import type { ReactNode } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
-import PageTransition from "./components/PageTransition.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import CreatePoll from "./pages/CreatePoll.jsx";
-import PollView from "./pages/PollView.jsx";
-import PollAnalytics from "./pages/PollAnalytics.jsx";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
+import PageTransition from "./components/PageTransition";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import CreatePoll from "./pages/CreatePoll";
+import PollView from "./pages/PollView";
+import PollAnalytics from "./pages/PollAnalytics";
+import PollDiscovery from "./pages/PollDiscovery";
 
-const Protected = ({ children }) => {
+const Protected = ({ children }: { children: ReactNode }) => {
   const { isLoggedIn } = useAuth();
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
@@ -56,6 +59,7 @@ function AppRoutes() {
           }
         />
         <Route path="/poll/:id" element={<PollView />} />
+        <Route path="/discover" element={<PollDiscovery />} />
         <Route
           path="/"
           element={
@@ -72,7 +76,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );
