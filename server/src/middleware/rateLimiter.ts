@@ -17,3 +17,12 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Stricter limiter for unauthenticated free-text comment posting
+export const commentLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: { message: 'Too many comments, please slow down' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

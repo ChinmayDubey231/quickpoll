@@ -1,7 +1,7 @@
-import { Worker } from 'bullmq';
+import { Worker, type Job } from 'bullmq';
 import Poll from '../models/Poll.js';
-import { bullmqConnection } from '../config/bullmq.js';
-import { getIO } from '../config/socket.js';
+import { bullmqConnection, type PollExpiryJobData } from '../config/bullmq.js';
+import { finalizePollClose } from '../controllers/pollController.js';
 
 /**
  * startPollWorker — call once from index.js after setIO() has been called.
@@ -11,9 +11,9 @@ import { getIO } from '../config/socket.js';
  * worker fires at (approximately) the right moment.
  */
 export const startPollWorker = () => {
-  const worker = new Worker(
+  const worker = new Worker<PollExpiryJobData>(
     'poll-expiry',
-    async (job) => {
+    async (job: Job<PollExpiryJobData>) => {
       const { pollId } = job.data;
 
       if (!pollId) {
@@ -34,18 +34,12 @@ export const startPollWorker = () => {
         return;
       }
 
-      // Close the poll in MongoDB
-      poll.isOpen = false;
-      await poll.save();
-
-      console.log(`⏰ poll-expiry: closed poll ${pollId}`);
-
-      // Notify all viewers currently watching this poll
       try {
-        getIO().to(pollId).emit('poll-closed', { pollId });
+        await finalizePollClose(poll);
+        console.log(`⏰ poll-expiry: closed poll ${pollId}`);
       } catch (err) {
-        // io not ready is non-fatal — poll is already closed in DB
-        console.error(`⚠️  poll-expiry: could not emit poll-closed for ${pollId}:`, err.message);
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`⚠️  poll-expiry: could not finalize poll ${pollId}:`, message);
       }
     },
     {

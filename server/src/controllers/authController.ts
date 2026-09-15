@@ -1,12 +1,15 @@
 import jwt from 'jsonwebtoken';
+import type { Request, Response } from 'express';
+import type { HydratedDocument } from 'mongoose';
 import User from '../models/User.js';
+import type { IUser } from '../types/models.js';
 
-const signToken = (userId) =>
-  jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+const signToken = (userId: unknown) =>
+  jwt.sign({ id: userId }, process.env.JWT_SECRET as string, {
     expiresIn: process.env.JWT_EXPIRY || '7d',
-  });
+  } as jwt.SignOptions);
 
-const authResponse = (user, res, statusCode = 200) => {
+const authResponse = (user: HydratedDocument<IUser>, res: Response, statusCode = 200) => {
   const token = signToken(user._id);
   res.status(statusCode).json({
     token,
@@ -19,7 +22,7 @@ const authResponse = (user, res, statusCode = 200) => {
 };
 
 // POST /api/auth/register
-export const register = async (req, res) => {
+export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
@@ -36,7 +39,7 @@ export const register = async (req, res) => {
 };
 
 // POST /api/auth/login
-export const login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {

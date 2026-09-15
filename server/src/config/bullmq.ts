@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
 export const bullmqConnection = new Redis(
   process.env.REDIS_URL || "redis://localhost:6379",
@@ -9,7 +9,11 @@ export const bullmqConnection = new Redis(
   },
 );
 
-export const pollExpiryQueue = new Queue("poll-expiry", {
+export interface PollExpiryJobData {
+  pollId: string;
+}
+
+export const pollExpiryQueue = new Queue<PollExpiryJobData>("poll-expiry", {
   connection: bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: 100,
