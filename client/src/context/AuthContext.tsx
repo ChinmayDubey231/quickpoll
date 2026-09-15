@@ -1,10 +1,20 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-import api from '../utils/api.js';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import api from '../utils/api';
+import type { UserDTO } from '../types/api';
 
-const AuthContext = createContext(null);
+interface AuthContextValue {
+  user: UserDTO | null;
+  token: string | null;
+  register: (name: string, email: string, password: string) => Promise<UserDTO>;
+  login: (email: string, password: string) => Promise<UserDTO>;
+  logout: () => void;
+  isLoggedIn: boolean;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<UserDTO | null>(() => {
     try {
       const stored = localStorage.getItem('user');
       return stored ? JSON.parse(stored) : null;
@@ -13,25 +23,25 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
 
-  const persist = (userData, jwtToken) => {
+  const persist = (userData: UserDTO, jwtToken: string) => {
     localStorage.setItem('token', jwtToken);
     localStorage.setItem('user', JSON.stringify(userData));
     setToken(jwtToken);
     setUser(userData);
   };
 
-  const register = useCallback(async (name, email, password) => {
+  const register = useCallback(async (name: string, email: string, password: string) => {
     const { data } = await api.post('/auth/register', { name, email, password });
     persist(data.user, data.token);
-    return data.user;
+    return data.user as UserDTO;
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post('/auth/login', { email, password });
     persist(data.user, data.token);
-    return data.user;
+    return data.user as UserDTO;
   }, []);
 
   const logout = useCallback(() => {

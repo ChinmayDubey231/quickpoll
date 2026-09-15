@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 
-export default function PageTransition({ children }) {
+export default function PageTransition({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [visible, setVisible] = useState(false);
 
