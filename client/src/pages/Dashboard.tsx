@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [closing, setClosing] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     api
@@ -85,6 +86,25 @@ export default function Dashboard() {
     showToast("Link copied to clipboard", "success");
   };
 
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const { data } = await api.get("/polls/export/csv", { responseType: "blob" });
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `quickpoll-report-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      showToast("Failed to export CSV", "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const totalVotes = loading
     ? null
     : polls.reduce((s, p) => s + (p.totalVotes || 0), 0);
@@ -103,13 +123,23 @@ export default function Dashboard() {
               Manage and monitor your polls
             </p>
           </div>
-          <Link
-            to="/create"
-            className={`inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm ${focusRing}`}
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            New Poll
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportCSV}
+              disabled={exporting || loading || polls.length === 0}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-surface-container text-on-surface font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm border border-outline-variant disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 ${focusRing}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              {exporting ? "Exporting…" : "Export CSV"}
+            </button>
+            <Link
+              to="/create"
+              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm ${focusRing}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              New Poll
+            </Link>
+          </div>
         </div>
 
         {/* Stat cards */}

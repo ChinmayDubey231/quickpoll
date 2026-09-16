@@ -29,6 +29,27 @@ export const getVoteCounts = async (req: Request, res: Response) => {
   res.json({ pollId, counts });
 };
 
+// ─── GET /api/votes/:pollId/status ─────────────────────────────────────────────
+// Checks whether the requester (by fingerprint and/or IP) has already voted,
+// so the client can show results instead of the ballot on repeat visits.
+export const getVoteStatus = async (req: Request, res: Response) => {
+  const pollId = paramId(req.params.pollId);
+  const fingerprint = typeof req.query.fingerprint === 'string' ? req.query.fingerprint : null;
+  const ip = getClientIp(req);
+
+  if (!FEATURES.VOTE_GUARD) return res.json({ voted: false });
+
+  const fingerprintKey = `vote::${pollId}::${fingerprint}`;
+  const ipKey = `vote::${pollId}::${ip}`;
+
+  const [fpExists, ipExists] = await Promise.all([
+    fingerprint ? redis.exists(fingerprintKey) : Promise.resolve(0),
+    redis.exists(ipKey),
+  ]);
+
+  res.json({ voted: Boolean(fpExists || ipExists) });
+};
+
 // ─── POST /api/votes/:pollId ───────────────────────────────────────────────────
 export const castVote = async (req: Request, res: Response) => {
   const pollId = paramId(req.params.pollId);
