@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
 import Layout from '../components/Layout';
 import ErrorMsg from '../components/shared/ErrorMsg';
+import { fadeUp, staggerContainer } from '../components/motion/variants';
 import type { PollType } from '../types/api';
 
 const MIN_OPTIONS = 2;
@@ -65,18 +67,23 @@ export default function CreatePoll() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto py-6">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="max-w-2xl mx-auto py-6"
+      >
         {/* Header */}
-        <div className="mb-8">
+        <motion.div variants={fadeUp} className="mb-8">
           <h1 className="font-display font-bold text-3xl text-on-surface">Create a Poll</h1>
           <p className="text-on-surface-variant text-sm mt-1">Share with anyone — no account needed to vote</p>
-        </div>
+        </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <ErrorMsg message={error} />
 
           {/* Question */}
-          <div className="glass-card rounded-xl p-6">
+          <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
             <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-3">
               Question <span className="text-outline">({question.length}/300)</span>
             </label>
@@ -87,10 +94,10 @@ export default function CreatePoll() {
               className={`w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all resize-none ${focusRing}`}
               placeholder="What would you like to ask?"
             />
-          </div>
+          </motion.div>
 
           {/* Poll type */}
-          <div className="glass-card rounded-xl p-6">
+          <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
             <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-3">
               Poll type
             </label>
@@ -100,13 +107,20 @@ export default function CreatePoll() {
                   key={t.value}
                   type="button"
                   onClick={() => setPollType(t.value)}
-                  className={`text-left p-3 rounded-xl border transition-all ${focusRing} ${
+                  className={`relative text-left p-3 rounded-xl border transition-colors overflow-hidden ${focusRing} ${
                     pollType === t.value
-                      ? 'border-primary/60 bg-primary/10'
+                      ? 'border-primary/60'
                       : 'border-outline-variant hover:bg-surface-container-high'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  {pollType === t.value && (
+                    <motion.span
+                      layoutId="poll-type-bg"
+                      className="absolute inset-0 bg-primary/10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <div className="relative flex items-center gap-2 mb-1">
                     <span className={`material-symbols-outlined text-[18px] ${pollType === t.value ? 'text-primary' : 'text-on-surface-variant'}`}>
                       {t.icon}
                     </span>
@@ -114,14 +128,14 @@ export default function CreatePoll() {
                       {t.label}
                     </span>
                   </div>
-                  <p className="text-xs text-on-surface-variant">{t.description}</p>
+                  <p className="relative text-xs text-on-surface-variant">{t.description}</p>
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Options */}
-          <div className="glass-card rounded-xl p-6">
+          <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <label className="text-xs font-mono tracking-widest text-on-surface-variant uppercase">
                 Options <span className="text-outline">({options.length}/{MAX_OPTIONS})</span>
@@ -138,33 +152,43 @@ export default function CreatePoll() {
             </div>
 
             <div className="space-y-3">
-              {options.map((opt, idx) => (
-                <div key={opt.id} className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-lg ${OPTION_COLORS[idx]} flex items-center justify-center flex-shrink-0`}>
-                    <span className="text-[10px] font-mono font-bold text-on-primary-container">{idx + 1}</span>
-                  </div>
-                  <input
-                    type="text" value={opt.text}
-                    onChange={e => updateOption(opt.id, e.target.value)}
-                    maxLength={100}
-                    className={`flex-1 bg-surface-container border border-outline-variant rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
-                    placeholder={`Option ${idx + 1}`}
-                  />
-                  {options.length > MIN_OPTIONS && (
-                    <button
-                      type="button" onClick={() => removeOption(opt.id)}
-                      className={`p-1.5 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">close</span>
-                    </button>
-                  )}
-                </div>
-              ))}
+              <AnimatePresence initial={false}>
+                {options.map((opt, idx) => (
+                  <motion.div
+                    key={opt.id}
+                    layout
+                    initial={{ opacity: 0, y: -8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className={`w-6 h-6 rounded-lg ${OPTION_COLORS[idx]} flex items-center justify-center flex-shrink-0`}>
+                      <span className="text-[10px] font-mono font-bold text-on-primary-container">{idx + 1}</span>
+                    </div>
+                    <input
+                      type="text" value={opt.text}
+                      onChange={e => updateOption(opt.id, e.target.value)}
+                      maxLength={100}
+                      className={`flex-1 bg-surface-container border border-outline-variant rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
+                      placeholder={`Option ${idx + 1}`}
+                    />
+                    {options.length > MIN_OPTIONS && (
+                      <button
+                        type="button" onClick={() => removeOption(opt.id)}
+                        className={`p-1.5 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">close</span>
+                      </button>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
 
           {/* Visibility */}
-          <div className="glass-card rounded-xl p-6">
+          <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -179,10 +203,10 @@ export default function CreatePoll() {
                 </span>
               </span>
             </label>
-          </div>
+          </motion.div>
 
           {/* Expiry */}
-          <div className="glass-card rounded-xl p-6">
+          <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
             <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-3">
               Expiry <span className="text-outline">(optional)</span>
             </label>
@@ -194,25 +218,28 @@ export default function CreatePoll() {
             <p className="text-xs text-on-surface-variant mt-2 font-mono">
               Leave blank to keep the poll open indefinitely
             </p>
-          </div>
+          </motion.div>
 
           {/* Submit */}
-          <div className="flex gap-3">
-            <button
+          <motion.div variants={fadeUp} className="flex gap-3">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
               type="button" onClick={() => navigate('/dashboard')}
-              className={`flex-1 py-3 border border-outline-variant text-on-surface-variant font-display font-bold rounded-xl hover:bg-surface-container-high transition-all text-sm ${focusRing}`}
+              className={`flex-1 py-3 border border-outline-variant text-on-surface-variant font-display font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm ${focusRing}`}
             >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.97 }}
               type="submit" disabled={loading}
-              className={`flex-2 flex-grow-[2] py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.99] active:scale-[0.97] transition-all disabled:opacity-50 text-sm ${focusRing}`}
+              className={`flex-2 flex-grow-[2] py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 text-sm ${focusRing}`}
             >
               {loading ? 'Creating…' : 'Create Poll'}
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </form>
-      </div>
+      </motion.div>
     </Layout>
   );
 }

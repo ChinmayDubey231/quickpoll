@@ -1,9 +1,12 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
 import ErrorMsg from "../components/shared/ErrorMsg";
+import AuroraBackground from "../components/motion/AuroraBackground";
+import { fadeUp, staggerContainer } from "../components/motion/variants";
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
@@ -47,30 +50,29 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center px-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/3 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center px-4 relative overflow-hidden">
+      <AuroraBackground />
 
-      <div className="w-full max-w-md relative">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-md relative"
+      >
         {/* Logo + wordmark */}
-        <div className="flex flex-col items-center mb-8">
+        <motion.div variants={fadeUp} className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Logo size={40} />
-            <span className="font-display font-bold text-3xl text-primary tracking-tight">
+            <span className="font-display font-bold text-3xl gradient-text tracking-tight">
               QuickPoll
             </span>
           </div>
           <p className="text-on-surface-variant text-sm">
             Real-time polling, live results
           </p>
-        </div>
+        </motion.div>
 
-        <div
-          className="glass-card rounded-2xl p-8"
-          style={{ animation: "fadeIn 350ms ease" }}
-        >
+        <motion.div variants={fadeUp} className="glass-card rounded-2xl p-8">
           <h1 className="font-display font-bold text-2xl text-on-surface mb-1">
             Create your account
           </h1>
@@ -78,11 +80,18 @@ export default function Register() {
             Start creating polls in seconds
           </p>
 
-          {error && (
-            <div className="mb-4">
-              <ErrorMsg message={error} />
-            </div>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 overflow-hidden"
+              >
+                <ErrorMsg message={error} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {FIELDS.map((field) => (
@@ -102,13 +111,15 @@ export default function Register() {
               </div>
             ))}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.97 }}
               type="submit"
               disabled={loading}
-              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-50 mt-2 ${focusRing}`}
+              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 mt-2 ${focusRing}`}
             >
               {loading ? "Creating account…" : "Create account"}
-            </button>
+            </motion.button>
           </form>
 
           <p className="mt-6 text-center text-sm text-on-surface-variant">
@@ -120,8 +131,8 @@ export default function Register() {
               Sign in
             </Link>
           </p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
