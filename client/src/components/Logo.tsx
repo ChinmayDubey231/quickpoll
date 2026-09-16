@@ -6,7 +6,7 @@ export default function Logo({ size = 28 }: { size?: number }) {
       <rect x="5" y="18" width="5" height="9" rx="1.5" fill="white" opacity="0.6"/>
       <rect x="13.5" y="12" width="5" height="15" rx="1.5" fill="white" opacity="0.85"/>
       <rect x="22" y="6" width="5" height="21" rx="1.5" fill="white"/>
-      <circle cx="26" cy="5" r="4" fill="#44ddc1"/>
+      <circle cx="26" cy="5" r="4" fill="#44ddc1" className="logo-live-dot"/>
       <circle cx="26" cy="5" r="2" fill="white"/>
     </svg>
   );

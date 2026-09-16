@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
 
@@ -27,11 +28,18 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#0B0E14]">
       {/* Top nav */}
-      <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-surface border-b border-outline-variant">
+      <motion.header
+        initial={{ y: -16, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-surface/90 backdrop-blur-md border-b border-outline-variant"
+      >
         {/* Logo + wordmark */}
         <Link to="/" className={`flex items-center gap-2.5 rounded-lg ${focusRing}`}>
-          <Logo size={28} />
-          <span className="font-display font-bold text-xl text-primary tracking-tight">
+          <motion.div whileHover={{ rotate: -6, scale: 1.05 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+            <Logo size={28} />
+          </motion.div>
+          <span className="font-display font-bold text-xl gradient-text tracking-tight">
             QuickPoll
           </span>
         </Link>
@@ -40,9 +48,12 @@ export default function Layout({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-3">
           {isLoggedIn ? (
             <>
-              <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs font-display flex-shrink-0">
+              <motion.div
+                whileHover={{ scale: 1.08 }}
+                className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs font-display flex-shrink-0 shadow-[0_0_0_2px_rgba(124,77,255,0.25)]"
+              >
                 {initials}
-              </div>
+              </motion.div>
               <span className="hidden sm:block text-sm text-on-surface-variant">
                 {user?.name}
               </span>
@@ -64,29 +75,39 @@ export default function Layout({ children }: { children: ReactNode }) {
             </Link>
           )}
         </div>
-      </header>
+      </motion.header>
 
       {/* Sidebar */}
       <aside className="hidden lg:flex flex-col fixed left-0 top-16 h-[calc(100vh-64px)] w-60 p-3 z-40 bg-surface-container-low border-r border-outline-variant">
         <div className="flex flex-col gap-1 mt-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${focusRing} ${
-                pathname === item.path
-                  ? "text-secondary font-semibold bg-secondary-container/10 translate-x-0.5"
-                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {item.icon}
-              </span>
-              <span className="font-mono text-xs tracking-wide">
-                {item.label}
-              </span>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active = pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm ${focusRing} ${
+                  active
+                    ? "text-secondary font-semibold"
+                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-0 rounded-lg bg-secondary-container/10 border border-secondary/20"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
+                )}
+                <span className="relative material-symbols-outlined text-[20px]">
+                  {item.icon}
+                </span>
+                <span className="relative font-mono text-xs tracking-wide">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Logout */}
@@ -111,23 +132,31 @@ export default function Layout({ children }: { children: ReactNode }) {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container border-t border-outline-variant">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-all ${focusRing} ${
-              pathname === item.path
-                ? "text-primary"
-                : "text-on-surface-variant hover:text-primary"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[22px]">
-              {item.icon}
-            </span>
-            <span className="text-[10px] font-mono">{item.label}</span>
-          </Link>
-        ))}
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container/95 backdrop-blur-md border-t border-outline-variant">
+        {navItems.map((item) => {
+          const active = pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`relative flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg ${focusRing} ${
+                active ? "text-primary" : "text-on-surface-variant hover:text-primary transition-colors"
+              }`}
+            >
+              {active && (
+                <motion.span
+                  layoutId="nav-pill-mobile"
+                  className="absolute inset-0 rounded-lg bg-primary/10"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="relative material-symbols-outlined text-[22px]">
+                {item.icon}
+              </span>
+              <span className="relative text-[10px] font-mono">{item.label}</span>
+            </Link>
+          );
+        })}
         {isLoggedIn && (
           <button
             onClick={logout}
