@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
 interface ErrorStateProps {
   icon?: string;
@@ -19,20 +18,10 @@ export default function ErrorState({
   backLabel = 'Go back',
 }: ErrorStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4"
-    >
-      <motion.div
-        initial={{ scale: 0.7 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.05 }}
-        className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4 border border-outline-variant"
-      >
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+      <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4 border border-outline-variant">
         <span className="material-symbols-outlined text-3xl text-error">{icon}</span>
-      </motion.div>
+      </div>
       <h2 className="font-display font-bold text-on-surface text-lg mb-1">{title}</h2>
       {description && <p className="text-sm text-on-surface-variant mb-4 max-w-sm">{description}</p>}
       {backTo && (
@@ -43,6 +32,6 @@ export default function ErrorState({
           {backLabel}
         </Link>
       )}
-    </motion.div>
+    </div>
   );
 }

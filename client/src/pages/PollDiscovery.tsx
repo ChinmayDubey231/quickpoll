@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import Layout from "../components/Layout";
 import SkeletonCard from "../components/shared/SkeletonCard";
 import EmptyState from "../components/shared/EmptyState";
 import ErrorMsg from "../components/shared/ErrorMsg";
-import { fadeUp, listItem, staggerContainer } from "../components/motion/variants";
 import type { DiscoverResponseDTO, PollDTO } from "../types/api";
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
@@ -44,8 +42,8 @@ export default function PollDiscovery() {
 
   return (
     <Layout>
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6 py-6">
-        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="space-y-6 py-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1 className="font-display font-bold text-3xl text-on-surface">Discover</h1>
             <p className="text-on-surface-variant text-sm mt-1">
@@ -57,22 +55,17 @@ export default function PollDiscovery() {
               <button
                 key={opt}
                 onClick={() => changeSort(opt)}
-                className={`relative px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wide transition-colors ${focusRing} ${
-                  sort === opt ? "text-on-primary-container" : "text-on-surface-variant hover:text-on-surface"
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wide transition-all ${focusRing} ${
+                  sort === opt
+                    ? "bg-primary-container text-on-primary-container"
+                    : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
-                {sort === opt && (
-                  <motion.span
-                    layoutId="discover-sort-pill"
-                    className="absolute inset-0 bg-primary-container rounded-lg"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  />
-                )}
-                <span className="relative">{opt}</span>
+                {opt}
               </button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         <ErrorMsg message={error} />
 
@@ -89,45 +82,37 @@ export default function PollDiscovery() {
           />
         ) : (
           <>
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-            >
-              <AnimatePresence mode="popLayout">
-                {polls.map((poll) => (
-                  <motion.div key={poll._id} variants={listItem} layout whileHover={{ y: -3 }}>
-                    <Link
-                      to={`/poll/${poll._id}`}
-                      className={`glass-card rounded-xl p-5 hover:border-outline transition-colors block h-full ${focusRing}`}
-                    >
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-secondary-container/20 text-secondary rounded-full border border-secondary/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-                          Live
-                        </span>
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant">
-                          {POLL_TYPE_LABEL[poll.pollType]}
-                        </span>
-                      </div>
-                      <p className="text-sm font-semibold text-on-surface line-clamp-3">
-                        {poll.question}
-                      </p>
-                      <div className="flex items-center gap-2 mt-3 text-xs font-mono text-on-surface-variant">
-                        <span className="material-symbols-outlined text-[14px]">how_to_vote</span>
-                        {poll.totalVotes ?? 0} vote{poll.totalVotes !== 1 ? "s" : ""}
-                        <span>·</span>
-                        {poll.options.length} options
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {polls.map((poll) => (
+                <Link
+                  key={poll._id}
+                  to={`/poll/${poll._id}`}
+                  className={`glass-card rounded-xl p-5 hover:border-outline transition-all block ${focusRing}`}
+                >
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-secondary-container/20 text-secondary rounded-full border border-secondary/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+                      Live
+                    </span>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant">
+                      {POLL_TYPE_LABEL[poll.pollType]}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-on-surface line-clamp-3">
+                    {poll.question}
+                  </p>
+                  <div className="flex items-center gap-2 mt-3 text-xs font-mono text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[14px]">how_to_vote</span>
+                    {poll.totalVotes ?? 0} vote{poll.totalVotes !== 1 ? "s" : ""}
+                    <span>·</span>
+                    {poll.options.length} options
+                  </div>
+                </Link>
+              ))}
+            </div>
 
             {totalPages > 1 && (
-              <motion.div variants={fadeUp} className="flex items-center justify-center gap-3 pt-2">
+              <div className="flex items-center justify-center gap-3 pt-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
@@ -145,11 +130,11 @@ export default function PollDiscovery() {
                 >
                   <span className="material-symbols-outlined">chevron_right</span>
                 </button>
-              </motion.div>
+              </div>
             )}
           </>
         )}
-      </motion.div>
+      </div>
     </Layout>
   );
 }

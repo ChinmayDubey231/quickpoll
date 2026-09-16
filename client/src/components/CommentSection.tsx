@@ -1,6 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { isAxiosError } from 'axios';
-import { AnimatePresence, motion } from 'framer-motion';
 import api from '../utils/api';
 import socket from '../utils/socket';
 import type { CommentDTO } from '../types/api';
@@ -71,15 +70,13 @@ export default function CommentSection({ pollId }: { pollId: string }) {
             placeholder="Add a comment…"
             className={`flex-1 bg-surface-container border border-outline-variant rounded-xl px-3 py-2 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 transition-all ${focusRing}`}
           />
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
+          <button
             type="submit"
             disabled={submitting || !authorName.trim() || !body.trim()}
-            className={`px-4 py-2 bg-primary-container text-on-primary-container font-medium rounded-xl text-sm disabled:opacity-40 transition-colors ${focusRing}`}
+            className={`px-4 py-2 bg-primary-container text-on-primary-container font-medium rounded-xl text-sm disabled:opacity-40 transition-all hover:scale-[0.98] ${focusRing}`}
           >
             Post
-          </motion.button>
+          </button>
         </div>
         {error && <p className="text-xs text-error mt-1.5">{error}</p>}
       </form>
@@ -90,25 +87,17 @@ export default function CommentSection({ pollId }: { pollId: string }) {
         <p className="text-sm text-on-surface-variant">No comments yet — be the first to say something.</p>
       ) : (
         <ul className="space-y-3 max-h-80 overflow-y-auto">
-          <AnimatePresence initial={false}>
-            {comments.map((c) => (
-              <motion.li
-                key={c._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-                className="text-sm"
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="font-semibold text-on-surface">{c.authorName}</span>
-                  <span className="text-[10px] font-mono text-on-surface-variant">
-                    {new Date(c.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-on-surface-variant">{c.body}</p>
-              </motion.li>
-            ))}
-          </AnimatePresence>
+          {comments.map((c) => (
+            <li key={c._id} className="text-sm">
+              <div className="flex items-baseline gap-2">
+                <span className="font-semibold text-on-surface">{c.authorName}</span>
+                <span className="text-[10px] font-mono text-on-surface-variant">
+                  {new Date(c.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              </div>
+              <p className="text-on-surface-variant">{c.body}</p>
+            </li>
+          ))}
         </ul>
       )}
     </div>
