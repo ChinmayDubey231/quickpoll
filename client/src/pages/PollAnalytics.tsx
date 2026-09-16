@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { isAxiosError } from "axios";
-import { motion } from "framer-motion";
 import api from "../utils/api";
 import Layout from "../components/Layout";
 import VoteTimelineChart from "../components/VoteTimelineChart";
@@ -10,8 +9,6 @@ import IrvRoundsChart from "../components/IrvRoundsChart";
 import QRCode from "../components/QRCode";
 import SkeletonCard from "../components/shared/SkeletonCard";
 import ErrorState from "../components/shared/ErrorState";
-import AnimatedNumber from "../components/motion/AnimatedNumber";
-import { fadeUp, staggerContainer } from "../components/motion/variants";
 import { seriesColors } from "../utils/chartTheme";
 import type { PollDTO, AnalyticsDTO, OptionCountDTO } from "../types/api";
 
@@ -98,9 +95,9 @@ export default function PollAnalytics() {
 
   return (
     <Layout>
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6 py-6">
+      <div className="space-y-6 py-6">
         {/* Header */}
-        <motion.section variants={fadeUp} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <Link
@@ -130,32 +127,28 @@ export default function PollAnalytics() {
             </h1>
           </div>
           <div className="flex gap-3 flex-shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
+            <button
               onClick={copyLink}
-              className="flex items-center gap-2 px-4 py-2 border border-outline text-on-surface rounded-xl hover:bg-surface-container-high transition-colors text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex items-center gap-2 px-4 py-2 border border-outline text-on-surface rounded-xl hover:bg-surface-container-high transition-all text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <span className="material-symbols-outlined text-[18px]">share</span>
               Share
-            </motion.button>
+            </button>
             {isOpen && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
+              <button
                 onClick={handleClose}
                 disabled={closing}
-                className="flex items-center gap-2 px-5 py-2 bg-error-container/20 text-error border border-error/30 rounded-xl hover:bg-error-container/40 transition-colors text-sm font-medium disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
+                className="flex items-center gap-2 px-5 py-2 bg-error-container/20 text-error border border-error/30 rounded-xl hover:bg-error-container/40 transition-all text-sm font-medium disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
               >
                 <span className="material-symbols-outlined text-[18px]">block</span>
                 Close Poll
-              </motion.button>
+              </button>
             )}
           </div>
-        </motion.section>
+        </section>
 
         {/* QR + Share */}
-        <motion.section variants={fadeUp} className="glass-card rounded-xl p-5 flex flex-col md:flex-row items-center gap-6">
+        <section className="glass-card rounded-xl p-5 flex flex-col md:flex-row items-center gap-6">
           <div className="bg-white p-3 rounded-xl flex-shrink-0">
             <QRCode url={shareUrl} size={120} />
           </div>
@@ -168,16 +161,15 @@ export default function PollAnalytics() {
                 <span className="text-sm text-on-surface-variant px-3 py-1.5 font-mono truncate flex-1">
                   {shareUrl}
                 </span>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
+                <button
                   onClick={copyLink}
-                  className="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg text-xs font-bold hover:scale-[0.98] transition-transform flex items-center gap-1.5 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     {copied ? "check" : "content_copy"}
                   </span>
                   {copied ? "Copied!" : "Copy"}
-                </motion.button>
+                </button>
                 <a
                   href={shareUrl}
                   target="_blank"
@@ -189,10 +181,10 @@ export default function PollAnalytics() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Stat cards */}
-        <motion.section variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
               label: "Total Votes",
@@ -226,15 +218,15 @@ export default function PollAnalytics() {
                 </span>
               </div>
               <div className="font-display font-bold text-4xl text-on-surface mb-1">
-                {typeof s.value === "number" ? <AnimatedNumber value={s.value} /> : s.value ?? "—"}
+                {s.value ?? "—"}
               </div>
               <p className="text-xs text-on-surface-variant">{s.sub}</p>
             </div>
           ))}
-        </motion.section>
+        </section>
 
         {/* Charts row */}
-        <motion.section variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Vote distribution */}
           <div className="glass-card rounded-xl p-6 flex flex-col gap-6">
             <div className="flex items-center justify-between">
@@ -260,12 +252,9 @@ export default function PollAnalytics() {
                       </span>
                     </div>
                     <div className="h-2.5 bg-surface-container rounded-full overflow-hidden border border-outline-variant/30">
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ background: seriesColors[i % seriesColors.length] }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${pct}%` }}
-                        transition={{ type: "spring", stiffness: 100, damping: 20, delay: i * 0.05 }}
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: seriesColors[i % seriesColors.length] }}
                       />
                     </div>
                   </div>
@@ -288,32 +277,29 @@ export default function PollAnalytics() {
               <span className="text-xs text-on-surface-variant font-mono">New Votes</span>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Ranked-choice round breakdown */}
         {poll.pollType === "ranked" && analytics.irv && (
-          <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
+          <div className="glass-card rounded-xl p-6">
             <h3 className="font-display font-semibold text-lg text-on-surface mb-5">
               Instant-Runoff Rounds
             </h3>
             <IrvRoundsChart result={analytics.irv} options={poll.options} />
-          </motion.div>
+          </div>
         )}
 
         {/* Bar chart */}
-        <motion.div variants={fadeUp} className="glass-card rounded-xl p-6">
+        <div className="glass-card rounded-xl p-6">
           <h3 className="font-display font-semibold text-lg text-on-surface mb-5">
             Results Chart
           </h3>
           <LiveBarChart options={poll.options} counts={counts} />
-        </motion.div>
+        </div>
 
         {/* Footer CTA */}
         {isOpen && (
-          <motion.footer
-            variants={fadeUp}
-            className="bg-primary/5 border border-primary/20 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4"
-          >
+          <footer className="bg-primary/5 border border-primary/20 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4 text-center md:text-left">
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                 <span className="material-symbols-outlined text-primary">campaign</span>
@@ -325,18 +311,16 @@ export default function PollAnalytics() {
                 </p>
               </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+            <button
               onClick={handleClose}
               disabled={closing}
-              className="bg-primary-container text-on-primary-container font-display font-bold px-8 py-3 rounded-xl transition-colors disabled:opacity-50 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="bg-primary-container text-on-primary-container font-display font-bold px-8 py-3 rounded-xl hover:scale-[0.98] active:scale-[0.96] transition-all disabled:opacity-50 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Close poll
-            </motion.button>
-          </motion.footer>
+            </button>
+          </footer>
         )}
-      </motion.div>
+      </div>
     </Layout>
   );
 }

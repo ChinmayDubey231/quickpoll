@@ -1,12 +1,9 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
 import ErrorMsg from "../components/shared/ErrorMsg";
-import AuroraBackground from "../components/motion/AuroraBackground";
-import { fadeUp, staggerContainer } from "../components/motion/variants";
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
@@ -36,29 +33,30 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center px-4 relative overflow-hidden">
-      <AuroraBackground />
+    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center px-4">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl" />
+      </div>
 
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-md relative"
-      >
+      <div className="w-full max-w-md relative">
         {/* Logo + wordmark */}
-        <motion.div variants={fadeUp} className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Logo size={40} />
-            <span className="font-display font-bold text-3xl gradient-text tracking-tight">
+            <span className="font-display font-bold text-3xl text-primary tracking-tight">
               QuickPoll
             </span>
           </div>
           <p className="text-on-surface-variant text-sm">
             Real-time polling, live results
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div variants={fadeUp} className="glass-card rounded-2xl p-8">
+        <div
+          className="glass-card rounded-2xl p-8"
+          style={{ animation: "fadeIn 350ms ease" }}
+        >
           <h1 className="font-display font-bold text-2xl text-on-surface mb-1">
             Welcome back
           </h1>
@@ -66,18 +64,11 @@ export default function Login() {
             Sign in to your account
           </p>
 
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-4 overflow-hidden"
-              >
-                <ErrorMsg message={error} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {error && (
+            <div className="mb-4">
+              <ErrorMsg message={error} />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -108,15 +99,13 @@ export default function Login() {
                 className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
               />
             </div>
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.97 }}
+            <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 mt-2 ${focusRing}`}
+              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-50 mt-2 ${focusRing}`}
             >
               {loading ? "Signing in…" : "Sign in"}
-            </motion.button>
+            </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-on-surface-variant">
@@ -128,8 +117,8 @@ export default function Login() {
               Create one
             </Link>
           </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { isAxiosError } from "axios";
-import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import socket from "../utils/socket";
 import LiveBarChart from "../components/LiveBarChart";
@@ -15,8 +14,6 @@ import ReactionBar from "../components/ReactionBar";
 import CommentSection from "../components/CommentSection";
 import RankedChoiceVoter from "../components/RankedChoiceVoter";
 import IrvRoundsChart from "../components/IrvRoundsChart";
-import AuroraBackground from "../components/motion/AuroraBackground";
-import { fadeUp, listItem, popIn, staggerContainer } from "../components/motion/variants";
 import { seriesColors } from "../utils/chartTheme";
 import type { PollDTO, OptionCountDTO, IrvResultDTO } from "../types/api";
 
@@ -194,19 +191,18 @@ export default function PollView() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14]">
-      <AuroraBackground variant="compact" />
+      {/* Background glows */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-secondary-container/8 rounded-full blur-3xl" />
+      </div>
 
       {/* Header */}
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant"
-      >
+      <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
         {/* Left — logo + wordmark */}
         <div className="flex items-center gap-2.5">
           <Logo size={28} />
-          <span className="font-display font-bold text-xl gradient-text tracking-tight">
+          <span className="font-display font-bold text-xl text-primary tracking-tight">
             QuickPoll
           </span>
         </div>
@@ -237,16 +233,11 @@ export default function PollView() {
             <CountdownTimer expiresAt={poll.expiresAt} onExpired={handleExpired} />
           )}
         </div>
-      </motion.header>
+      </header>
 
-      <motion.main
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="pt-24 pb-12 px-4 max-w-2xl mx-auto relative space-y-4"
-      >
+      <main className="pt-24 pb-12 px-4 max-w-2xl mx-auto relative space-y-4">
         {/* Poll card */}
-        <motion.div variants={fadeUp} className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <span className="text-xs font-mono text-on-surface-variant">
               {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
@@ -274,15 +265,12 @@ export default function PollView() {
 
           {/* Voting options */}
           {canVote && poll.pollType === "single" && (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-2.5 mb-6">
+            <div className="space-y-2.5 mb-6">
               {poll.options.map((opt, i) => (
-                <motion.button
+                <button
                   key={i}
-                  variants={listItem}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedOption(i)}
-                  className={`w-full text-left px-4 py-3.5 rounded-xl border text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`w-full text-left px-4 py-3.5 rounded-xl border text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     selectedOption === i
                       ? SELECTED_COLORS[i]
                       : `border-outline-variant text-on-surface-variant ${OPTION_COLORS[i]}`
@@ -290,64 +278,47 @@ export default function PollView() {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+                      className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                         selectedOption === i ? "border-current bg-current" : "border-outline"
                       }`}
                     >
-                      {selectedOption === i && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                          className="w-1.5 h-1.5 rounded-full bg-surface"
-                        />
-                      )}
+                      {selectedOption === i && <div className="w-1.5 h-1.5 rounded-full bg-surface" />}
                     </div>
                     {opt.text}
                   </div>
-                </motion.button>
+                </button>
               ))}
-            </motion.div>
+            </div>
           )}
 
           {canVote && poll.pollType === "multi" && (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-2.5 mb-6">
+            <div className="space-y-2.5 mb-6">
               {poll.options.map((opt, i) => {
                 const isSelected = selectedOptions.includes(i);
                 return (
-                  <motion.button
+                  <button
                     key={i}
-                    variants={listItem}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMultiOption(i)}
-                    className={`w-full text-left px-4 py-3.5 rounded-xl border text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    className={`w-full text-left px-4 py-3.5 rounded-xl border text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       isSelected ? SELECTED_COLORS[i] : `border-outline-variant text-on-surface-variant ${OPTION_COLORS[i]}`
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border-2 transition-colors ${
+                        className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border-2 transition-all ${
                           isSelected ? "border-current bg-current" : "border-outline"
                         }`}
                       >
                         {isSelected && (
-                          <motion.span
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                            className="material-symbols-outlined text-[12px] text-surface"
-                          >
-                            check
-                          </motion.span>
+                          <span className="material-symbols-outlined text-[12px] text-surface">check</span>
                         )}
                       </div>
                       {opt.text}
                     </div>
-                  </motion.button>
+                  </button>
                 );
               })}
-            </motion.div>
+            </div>
           )}
 
           {canVote && poll.pollType === "ranked" && (
@@ -360,38 +331,21 @@ export default function PollView() {
           )}
 
           {canVote && (
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.97 }}
+            <button
               onClick={handleVote}
               disabled={!canSubmit || voting}
-              className="w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-all hover:scale-[0.99] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {voting ? "Submitting…" : "Submit Vote"}
-            </motion.button>
+            </button>
           )}
 
-          <AnimatePresence>
-            {voted && (
-              <motion.div
-                variants={popIn}
-                initial="hidden"
-                animate="visible"
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="px-4 py-3 bg-secondary-container/20 border border-secondary/30 rounded-xl text-sm text-secondary font-medium text-center flex items-center justify-center gap-2"
-              >
-                <motion.span
-                  initial={{ scale: 0, rotate: -90 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
-                  className="material-symbols-outlined text-[18px]"
-                >
-                  check_circle
-                </motion.span>
-                Your vote has been recorded
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {voted && (
+            <div className="px-4 py-3 bg-secondary-container/20 border border-secondary/30 rounded-xl text-sm text-secondary font-medium text-center flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              Your vote has been recorded
+            </div>
+          )}
 
           {isClosed && !voted && (
             <div className="px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface-variant text-center flex items-center justify-center gap-2">
@@ -405,66 +359,53 @@ export default function PollView() {
               {error}
             </div>
           )}
-        </motion.div>
+        </div>
 
         {/* Live results */}
-        <AnimatePresence>
-          {(voted || isClosed) && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="glass-card rounded-2xl p-6"
-            >
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-display font-semibold text-on-surface">
-                  {poll.pollType === "ranked" ? (isClosed ? "Final Result" : "First-Choice Votes — Live") : "Live Results"}
-                </h2>
-                <span className="text-xs font-mono text-on-surface-variant">{totalVotes} total</span>
-              </div>
+        {(voted || isClosed) && (
+          <div className="glass-card rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-display font-semibold text-on-surface">
+                {poll.pollType === "ranked" ? (isClosed ? "Final Result" : "First-Choice Votes — Live") : "Live Results"}
+              </h2>
+              <span className="text-xs font-mono text-on-surface-variant">{totalVotes} total</span>
+            </div>
 
-              {poll.pollType === "ranked" && isClosed && finalResult ? (
-                <IrvRoundsChart result={finalResult} options={poll.options} />
-              ) : (
-                <>
-                  <LiveBarChart options={poll.options} counts={counts} />
+            {poll.pollType === "ranked" && isClosed && finalResult ? (
+              <IrvRoundsChart result={finalResult} options={poll.options} />
+            ) : (
+              <>
+                <LiveBarChart options={poll.options} counts={counts} />
 
-                  <ul className="mt-5 space-y-3">
-                    {poll.options.map((opt, i) => {
-                      const count = counts.find((c) => c.optionIndex === i)?.count ?? 0;
-                      const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-                      return (
-                        <li key={i}>
-                          <div className="flex justify-between text-sm mb-1.5">
-                            <span className="text-on-surface font-medium">{opt.text}</span>
-                            <span className="text-on-surface-variant font-mono text-xs">
-                              {count} · {pct}%
-                            </span>
-                          </div>
-                          <div className="h-2 bg-surface-container rounded-full overflow-hidden border border-outline-variant/30">
-                            <motion.div
-                              className="h-full rounded-full"
-                              style={{ background: seriesColors[i % seriesColors.length] }}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${pct}%` }}
-                              transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <ul className="mt-5 space-y-3">
+                  {poll.options.map((opt, i) => {
+                    const count = counts.find((c) => c.optionIndex === i)?.count ?? 0;
+                    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                    return (
+                      <li key={i}>
+                        <div className="flex justify-between text-sm mb-1.5">
+                          <span className="text-on-surface font-medium">{opt.text}</span>
+                          <span className="text-on-surface-variant font-mono text-xs">
+                            {count} · {pct}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-surface-container rounded-full overflow-hidden border border-outline-variant/30">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, background: seriesColors[i % seriesColors.length] }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
 
-        <motion.div variants={fadeUp}>
-          <CommentSection pollId={poll._id} />
-        </motion.div>
-      </motion.main>
+        <CommentSection pollId={poll._id} />
+      </main>
     </div>
   );
 }

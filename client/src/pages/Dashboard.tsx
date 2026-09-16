@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
-import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import Layout from "../components/Layout";
 import ConfirmModal from "../components/ConfirmModal";
 import EmptyState from "../components/shared/EmptyState";
 import SkeletonCard from "../components/shared/SkeletonCard";
 import ErrorMsg from "../components/shared/ErrorMsg";
-import AnimatedNumber from "../components/motion/AnimatedNumber";
-import { fadeUp, listItem, staggerContainer } from "../components/motion/variants";
 import { useToast } from "../context/ToastContext";
 import type { PollDTO } from "../types/api";
 
@@ -115,14 +112,9 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="space-y-8 py-6"
-      >
+      <div className="space-y-8 py-6">
         {/* Header */}
-        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1 className="font-display font-bold text-3xl text-on-surface">
               Dashboard
@@ -132,30 +124,26 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
+            <button
               onClick={handleExportCSV}
               disabled={exporting || loading || polls.length === 0}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-surface-container text-on-surface font-display font-bold rounded-xl transition-colors text-sm border border-outline-variant disabled:opacity-40 disabled:cursor-not-allowed ${focusRing}`}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-surface-container text-on-surface font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm border border-outline-variant disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 ${focusRing}`}
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
               {exporting ? "Exporting…" : "Export CSV"}
-            </motion.button>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-              <Link
-                to="/create"
-                className={`inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors text-sm ${focusRing}`}
-              >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                New Poll
-              </Link>
-            </motion.div>
+            </button>
+            <Link
+              to="/create"
+              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl hover:scale-[0.98] transition-transform text-sm ${focusRing}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              New Poll
+            </Link>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stat cards */}
-        <motion.div variants={fadeUp} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[
             {
               label: "Total Polls",
@@ -193,19 +181,19 @@ export default function Dashboard() {
               </div>
               <span className="font-display font-bold text-4xl text-on-surface">
                 {s.value === null ? (
-                  <span className="inline-block w-12 h-8 bg-surface-container-high rounded skeleton-shimmer" />
+                  <span className="inline-block w-12 h-8 bg-surface-container-high rounded animate-pulse" />
                 ) : (
-                  <AnimatedNumber value={s.value} />
+                  s.value
                 )}
               </span>
             </div>
           ))}
-        </motion.div>
+        </div>
 
         <ErrorMsg message={error} />
 
         {/* Polls list */}
-        <motion.div variants={fadeUp}>
+        <div>
           <h2 className="font-display font-semibold text-lg text-on-surface mb-4">
             My Polls
           </h2>
@@ -229,114 +217,104 @@ export default function Dashboard() {
               }
             />
           ) : (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
-              <AnimatePresence initial={false}>
-                {polls.map((poll) => (
-                  <motion.div
-                    key={poll._id}
-                    variants={listItem}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    layout
-                    whileHover={{ y: -2 }}
-                    className="glass-card rounded-xl p-5 hover:border-outline transition-colors group"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <StatusBadge poll={poll} />
-                          <span className="text-[10px] font-mono text-on-surface-variant">
-                            {poll.totalVotes || 0} vote
-                            {poll.totalVotes !== 1 ? "s" : ""}
+            <div className="space-y-3">
+              {polls.map((poll) => (
+                <div
+                  key={poll._id}
+                  className="glass-card rounded-xl p-5 hover:border-outline transition-all group"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <StatusBadge poll={poll} />
+                        <span className="text-[10px] font-mono text-on-surface-variant">
+                          {poll.totalVotes || 0} vote
+                          {poll.totalVotes !== 1 ? "s" : ""}
+                        </span>
+                        <span className="text-[10px] font-mono text-on-surface-variant">
+                          ·
+                        </span>
+                        <span className="text-[10px] font-mono text-on-surface-variant">
+                          {poll.options.length} options
+                        </span>
+                        {poll.isPublic && (
+                          <span className="text-[10px] font-mono text-on-surface-variant flex items-center gap-0.5">
+                            <span className="material-symbols-outlined text-[12px]">public</span>
+                            Public
                           </span>
-                          <span className="text-[10px] font-mono text-on-surface-variant">
-                            ·
-                          </span>
-                          <span className="text-[10px] font-mono text-on-surface-variant">
-                            {poll.options.length} options
-                          </span>
-                          {poll.isPublic && (
-                            <span className="text-[10px] font-mono text-on-surface-variant flex items-center gap-0.5">
-                              <span className="material-symbols-outlined text-[12px]">public</span>
-                              Public
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm font-semibold text-on-surface truncate">
-                          {poll.question}
-                        </p>
-                        <p className="text-xs text-on-surface-variant mt-1 font-mono">
-                          {new Date(poll.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
+                        )}
                       </div>
-
-                      <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                        <button
-                          onClick={() => copyLink(poll._id)}
-                          title="Copy share link"
-                          className={`p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            content_copy
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => navigate(`/polls/${poll._id}/analytics`)}
-                          title="Analytics"
-                          className={`p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            leaderboard
-                          </span>
-                        </button>
-                        {poll.isOpen &&
-                          (!poll.expiresAt ||
-                            new Date(poll.expiresAt) > new Date()) && (
-                            <button
-                              onClick={() => handleClose(poll._id)}
-                              disabled={closing === poll._id}
-                              title="Close poll"
-                              className={`p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40 ${focusRing}`}
-                            >
-                              <span className="material-symbols-outlined text-[18px]">
-                                block
-                              </span>
-                            </button>
-                          )}
-                        <button
-                          onClick={() => setConfirmId(poll._id)}
-                          disabled={deleting === poll._id}
-                          title="Delete"
-                          className={`p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40 ${focusRing}`}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            delete
-                          </span>
-                        </button>
-                      </div>
+                      <p className="text-sm font-semibold text-on-surface truncate">
+                        {poll.question}
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-1 font-mono">
+                        {new Date(poll.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
                     </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
+
+                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <button
+                        onClick={() => copyLink(poll._id)}
+                        title="Copy share link"
+                        className={`p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          content_copy
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => navigate(`/polls/${poll._id}/analytics`)}
+                        title="Analytics"
+                        className={`p-2 text-on-surface-variant hover:text-secondary hover:bg-surface-container-high rounded-lg transition-all ${focusRing}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          leaderboard
+                        </span>
+                      </button>
+                      {poll.isOpen &&
+                        (!poll.expiresAt ||
+                          new Date(poll.expiresAt) > new Date()) && (
+                          <button
+                            onClick={() => handleClose(poll._id)}
+                            disabled={closing === poll._id}
+                            title="Close poll"
+                            className={`p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40 ${focusRing}`}
+                          >
+                            <span className="material-symbols-outlined text-[18px]">
+                              block
+                            </span>
+                          </button>
+                        )}
+                      <button
+                        onClick={() => setConfirmId(poll._id)}
+                        disabled={deleting === poll._id}
+                        title="Delete"
+                        className={`p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-all disabled:opacity-40 ${focusRing}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          delete
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </motion.div>
-      </motion.div>
-      <AnimatePresence>
-        {confirmId && (
-          <ConfirmModal
-            title="Delete Poll"
-            message="This will permanently delete the poll and all its votes. This cannot be undone."
-            onConfirm={() => handleDelete(confirmId)}
-            onCancel={() => setConfirmId(null)}
-          />
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
+      {confirmId && (
+        <ConfirmModal
+          title="Delete Poll"
+          message="This will permanently delete the poll and all its votes. This cannot be undone."
+          onConfirm={() => handleDelete(confirmId)}
+          onCancel={() => setConfirmId(null)}
+        />
+      )}
     </Layout>
   );
 }
