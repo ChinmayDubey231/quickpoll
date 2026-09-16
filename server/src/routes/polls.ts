@@ -9,6 +9,7 @@ import {
   closePoll,
   deletePoll,
   getPollAnalytics,
+  exportPollsCSV,
 } from '../controllers/pollController.js';
 import { getComments, addComment, deleteComment } from '../controllers/commentController.js';
 import { getReactions, addReaction } from '../controllers/reactionController.js';
@@ -18,6 +19,9 @@ const router = Router();
 // Public — must be registered before GET /:id, or Express/Mongoose will try
 // to cast the literal "discover" as an ObjectId.
 router.get('/discover', apiLimiter, getPublicPolls);
+
+// Creator — JWT required; must also be registered before GET /:id.
+router.get('/export/csv', auth, exportPollsCSV);
 
 // Public
 router.get('/:id', apiLimiter, getPoll);

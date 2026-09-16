@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import User from "./models/User.js";
 import Poll from "./models/Poll.js";
 import Vote from "./models/Vote.js";
+import Comment from "./models/Comment.js";
 import redis from "./config/redis.js";
 
 interface VoteSeed {
@@ -33,7 +34,7 @@ const seed = async () => {
   await connectDB();
   console.log("🌱 Seeding...");
 
-  await Promise.all([User.deleteMany(), Poll.deleteMany(), Vote.deleteMany()]);
+  await Promise.all([User.deleteMany(), Poll.deleteMany(), Vote.deleteMany(), Comment.deleteMany()]);
 
   const hashed = await bcrypt.hash("password123", 12);
   const [alice, bob, carol] = await User.insertMany([
@@ -251,6 +252,56 @@ const seed = async () => {
 
   await Vote.insertMany(votes);
   console.log(`🗳️  Created ${votes.length} votes`);
+
+  // Discussion comments — spread across the most active polls
+  const commentsByPoll: Record<number, { authorName: string; body: string }[]> = {
+    0: [
+      { authorName: "devrel_max", body: "Next.js + Postgres + Prisma is basically the default now, hard to argue with the DX." },
+      { authorName: "sqlite_fan", body: "Remix + SQLite + Drizzle is criminally underrated for side projects that never need to scale." },
+      { authorName: "quiet_coder", body: "Surprised Nuxt + Mongo is this far behind, I've had a great time with that combo." },
+    ],
+    1: [
+      { authorName: "jwt_hater", body: "Rolling your own JWT flow is fun until you hit refresh-token rotation edge cases at 2am." },
+      { authorName: "clerk_stan", body: "Switched to Clerk last quarter and never looked back, worth the cost for us." },
+      { authorName: "fbase_dev", body: "Supabase auth + RLS has been solid for our multi-tenant app." },
+      { authorName: "authjs_user", body: "Auth.js covers 90% of what most apps need out of the box." },
+    ],
+    3: [
+      { authorName: "ci_frustrated", body: "Our pipeline takes 22 minutes end to end, it's brutal for iteration speed." },
+      { authorName: "flaky_no_more", body: "Flaky E2E tests are the actual reason our team stopped trusting the test suite." },
+      { authorName: "review_queue", body: "PR review turnaround is the real bottleneck here, not the tooling." },
+    ],
+    4: [
+      { authorName: "pyramid_believer", body: "Balanced pyramid every time — heavy unit coverage, a handful of integration, light E2E." },
+      { authorName: "e2e_only_guy", body: "Controversial but we ship fast with mostly E2E and thin unit coverage." },
+    ],
+    6: [
+      { authorName: "url_versioner", body: "URL versioning is ugly but it's the easiest for consumers to reason about." },
+      { authorName: "header_purist", body: "Header versioning keeps URLs clean, just needs good docs so clients don't miss it." },
+    ],
+    8: [
+      { authorName: "react_all_day", body: "React everywhere, but I keep a Svelte project on the side for fun." },
+      { authorName: "vue_team_lead", body: "Vue at work, React for personal projects — best of both worlds honestly." },
+      { authorName: "framework_agnostic", body: "Used all four professionally at some point, they all get the job done." },
+    ],
+    9: [
+      { authorName: "pineapple_defender", body: "Pineapple on pizza is not a crime, fight me." },
+      { authorName: "purist_pepperoni", body: "Pepperoni is undefeated, always has been." },
+      { authorName: "olive_enjoyer", body: "Olives deserve more respect in this poll." },
+    ],
+  };
+
+  const comments = Object.entries(commentsByPoll).flatMap(([pollIndex, entries]) =>
+    entries.map((c, i) => ({
+      pollId: polls[Number(pollIndex)]._id,
+      authorName: c.authorName,
+      body: c.body,
+      createdAt: new Date(now - (entries.length - i) * 25 * 60 * 1000 - Math.random() * 30 * 60 * 1000),
+    }))
+  );
+
+  await Comment.insertMany(comments);
+  console.log(`💬 Created ${comments.length} comments`);
 
   // Sync Redis counts + ballots counter, and Poll.totalVotesCache
   const pollStats: Record<string, { counts: Record<number, number>; ballots: number }> = {};

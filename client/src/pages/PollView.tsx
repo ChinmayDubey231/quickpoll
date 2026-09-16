@@ -59,6 +59,9 @@ export default function PollView() {
   const [rankedOrder, setRankedOrder] = useState<number[]>([]);
   const [voting, setVoting] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const [checkingVoteStatus, setCheckingVoteStatus] = useState(true);
+  const [fingerprint, setFingerprint] = useState<string | null>(null);
+  const [fingerprintReady, setFingerprintReady] = useState(false);
   const fingerprintRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -66,9 +69,25 @@ export default function PollView() {
       .then((fp) => fp.get())
       .then((r) => {
         fingerprintRef.current = r.visitorId;
+        setFingerprint(r.visitorId);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setFingerprintReady(true));
   }, []);
+
+  // Once the poll has loaded and we know the visitor's fingerprint, check
+  // whether they've already voted (fingerprint/IP dedup) so we can show
+  // results directly instead of the ballot on a repeat visit.
+  useEffect(() => {
+    if (!pollId || !poll || !fingerprintReady) return;
+    api
+      .get<{ voted: boolean }>(`/votes/${pollId}/status`, { params: { fingerprint } })
+      .then(({ data }) => {
+        if (data.voted) setVoted(true);
+      })
+      .catch(() => {})
+      .finally(() => setCheckingVoteStatus(false));
+  }, [pollId, poll, fingerprintReady, fingerprint]);
 
   useEffect(() => {
     if (!pollId) return;
@@ -166,7 +185,7 @@ export default function PollView() {
 
   if (!poll) return null;
 
-  const canVote = !voted && !isClosed;
+  const canVote = !voted && !isClosed && !checkingVoteStatus;
   const canSubmit =
     poll.pollType === "multi" ? selectedOptions.length > 0 : poll.pollType === "ranked" ? rankedOrder.length > 0 : selectedOption !== null;
 
@@ -237,6 +256,12 @@ export default function PollView() {
           <div className="mb-6">
             <ReactionBar pollId={poll._id} fingerprint={fingerprintRef.current} />
           </div>
+
+          {checkingVoteStatus && !isClosed && !voted && (
+            <div className="flex items-center justify-center py-6 mb-6">
+              <Spinner />
+            </div>
+          )}
 
           {/* Voting options */}
           {canVote && poll.pollType === "single" && (

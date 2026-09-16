@@ -67,6 +67,86 @@ export const finalizePollClose = async (poll: HydratedDocument<IPoll>) => {
   return poll;
 };
 
+// Wraps a CSV field in quotes (doubling any internal quotes) if it contains
+// a comma, quote, or newline that would otherwise break column alignment.
+const csvEscape = (value: string): string =>
+  /[",\n\r]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+
+// ─── GET /api/polls/export/csv ─────────────────────────────────────────────────
+// Creator only — one row per poll option across every poll they own, with
+// vote counts/percentages and poll-level metadata.
+export const exportPollsCSV = async (req: Request, res: Response) => {
+  const polls = await Poll.find({ creatorId: req.user._id }).sort({ createdAt: -1 });
+  const pollIds = polls.map((p) => p._id);
+
+  const voteStats = await Vote.aggregate([
+    { $match: { pollId: { $in: pollIds } } },
+    {
+      $group: {
+        _id: '$pollId',
+        fingerprints: { $addToSet: '$voterFingerprint' },
+        recorded: { $sum: 1 },
+      },
+    },
+  ]);
+  const uniqueVotersByPoll = new Map<string, number>(
+    voteStats.map((s) => [
+      s._id.toString(),
+      (s.fingerprints as (string | null)[]).filter(Boolean).length || s.recorded,
+    ])
+  );
+
+  const header = [
+    'Poll ID',
+    'Question',
+    'Poll Type',
+    'Status',
+    'Public',
+    'Created At',
+    'Expires At',
+    'Total Votes',
+    'Unique Voters',
+    'Option Index',
+    'Option Text',
+    'Option Votes',
+    'Option Percentage',
+  ];
+  const rows: string[][] = [header];
+
+  for (const poll of polls) {
+    const counts = await getOptionCounts(poll);
+    const totalVotes = await getTotalVotes(poll._id.toString(), counts);
+    const uniqueVoters = uniqueVotersByPoll.get(poll._id.toString()) ?? 0;
+
+    poll.options.forEach((opt, i) => {
+      const count = counts.find((c) => c.optionIndex === i)?.count ?? 0;
+      const pct = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : '0.0';
+      rows.push([
+        poll._id.toString(),
+        poll.question,
+        poll.pollType,
+        poll.isOpen ? 'Open' : 'Closed',
+        poll.isPublic ? 'Yes' : 'No',
+        poll.createdAt.toISOString(),
+        poll.expiresAt ? poll.expiresAt.toISOString() : '',
+        String(totalVotes),
+        String(uniqueVoters),
+        String(i),
+        opt.text,
+        String(count),
+        `${pct}%`,
+      ]);
+    });
+  }
+
+  const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\r\n');
+  const filename = `quickpoll-report-${new Date().toISOString().slice(0, 10)}.csv`;
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(`﻿${csv}`);
+};
+
 // ─── GET /api/polls ────────────────────────────────────────────────────────────
 // Returns the authenticated creator's polls with vote counts
 export const getMyPolls = async (req: Request, res: Response) => {
