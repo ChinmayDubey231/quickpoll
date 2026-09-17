@@ -11,13 +11,15 @@ import CountdownTimer from "../components/CountdownTimer";
 import Spinner from "../components/shared/Spinner";
 import ErrorState from "../components/shared/ErrorState";
 import Logo from "../components/Logo";
+import ThemeToggle from "../components/ThemeToggle";
 import ReactionBar from "../components/ReactionBar";
 import CommentSection from "../components/CommentSection";
 import RankedChoiceVoter from "../components/RankedChoiceVoter";
 import IrvRoundsChart from "../components/IrvRoundsChart";
 import AuroraBackground from "../components/motion/AuroraBackground";
 import { fadeUp, listItem, popIn, staggerContainer } from "../components/motion/variants";
-import { seriesColors } from "../utils/chartTheme";
+import { getSeriesColors } from "../utils/chartTheme";
+import { useTheme } from "../context/ThemeContext";
 import type { PollDTO, OptionCountDTO, IrvResultDTO } from "../types/api";
 
 const fpPromise = FingerprintJS.load();
@@ -49,6 +51,8 @@ const SELECTED_COLORS = [
 ];
 
 export default function PollView() {
+  const { theme } = useTheme();
+  const seriesColors = getSeriesColors(theme);
   const { id: pollId } = useParams<{ id: string }>();
   const [poll, setPoll] = useState<PollDTO | null>(null);
   const [counts, setCounts] = useState<OptionCountDTO[]>([]);
@@ -174,14 +178,14 @@ export default function PollView() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Spinner />
       </div>
     );
 
   if (error && !poll)
     return (
-      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <ErrorState icon="link_off" title="Poll not found" description={error} backTo="/" backLabel="Go home" />
       </div>
     );
@@ -193,7 +197,7 @@ export default function PollView() {
     poll.pollType === "multi" ? selectedOptions.length > 0 : poll.pollType === "ranked" ? rankedOrder.length > 0 : selectedOption !== null;
 
   return (
-    <div className="min-h-screen bg-[#0B0E14]">
+    <div className="min-h-screen bg-background">
       <AuroraBackground variant="compact" />
 
       {/* Header */}
@@ -218,8 +222,9 @@ export default function PollView() {
           </p>
         </div>
 
-        {/* Right — status + vote count + timer */}
+        {/* Right — theme toggle + status + vote count + timer */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <span className="hidden sm:block text-xs font-mono text-on-surface-variant">
             {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
           </span>

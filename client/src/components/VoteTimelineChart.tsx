@@ -10,7 +10,8 @@ import {
   type ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { chartColors, chartFonts, tooltipTheme } from '../utils/chartTheme';
+import { getChartColors, chartFonts, getTooltipTheme } from '../utils/chartTheme';
+import { useTheme } from '../context/ThemeContext';
 import type { AnalyticsTimelinePointDTO } from '../types/api';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
@@ -20,6 +21,10 @@ interface VoteTimelineChartProps {
 }
 
 export default function VoteTimelineChart({ timeline = [] }: VoteTimelineChartProps) {
+  const { theme } = useTheme();
+  const chartColors = getChartColors(theme);
+  const tooltipTheme = getTooltipTheme(theme);
+
   if (timeline.length === 0) return (
     <div className="flex items-center justify-center h-40 text-sm text-on-surface-variant font-mono">
       No timeline data yet

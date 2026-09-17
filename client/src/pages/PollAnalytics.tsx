@@ -12,10 +12,13 @@ import SkeletonCard from "../components/shared/SkeletonCard";
 import ErrorState from "../components/shared/ErrorState";
 import AnimatedNumber from "../components/motion/AnimatedNumber";
 import { fadeUp, staggerContainer } from "../components/motion/variants";
-import { seriesColors } from "../utils/chartTheme";
+import { getSeriesColors } from "../utils/chartTheme";
+import { useTheme } from "../context/ThemeContext";
 import type { PollDTO, AnalyticsDTO, OptionCountDTO } from "../types/api";
 
 export default function PollAnalytics() {
+  const { theme } = useTheme();
+  const seriesColors = getSeriesColors(theme);
   const { id: pollId } = useParams<{ id: string }>();
   const [poll, setPoll] = useState<PollDTO | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsDTO | null>(null);

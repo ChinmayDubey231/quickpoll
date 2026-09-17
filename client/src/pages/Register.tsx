@@ -4,6 +4,7 @@ import { isAxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
+import ThemeToggle from "../components/ThemeToggle";
 import ErrorMsg from "../components/shared/ErrorMsg";
 import AuroraBackground from "../components/motion/AuroraBackground";
 import { fadeUp, staggerContainer } from "../components/motion/variants";
@@ -50,8 +51,9 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
       <AuroraBackground />
+      <ThemeToggle className="fixed top-4 right-4 z-10" />
 
       <motion.div
         variants={staggerContainer}
