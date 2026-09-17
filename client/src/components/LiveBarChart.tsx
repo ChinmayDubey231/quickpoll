@@ -9,7 +9,8 @@ import {
   type ChartOptions,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { chartColors, seriesColors, chartFonts, tooltipTheme } from '../utils/chartTheme';
+import { getChartColors, getSeriesColors, chartFonts, getTooltipTheme } from '../utils/chartTheme';
+import { useTheme } from '../context/ThemeContext';
 import type { OptionDTO, OptionCountDTO } from '../types/api';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
@@ -21,6 +22,10 @@ interface LiveBarChartProps {
 
 export default function LiveBarChart({ options = [], counts = [] }: LiveBarChartProps) {
   const chartRef = useRef<ChartJS<'bar'> | null>(null);
+  const { theme } = useTheme();
+  const chartColors = getChartColors(theme);
+  const seriesColors = getSeriesColors(theme);
+  const tooltipTheme = getTooltipTheme(theme);
 
   const data = options.map((_, i) => counts.find((c) => c.optionIndex === i)?.count ?? 0);
   const total = data.reduce((s, n) => s + n, 0);

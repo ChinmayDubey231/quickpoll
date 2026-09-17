@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   { icon: "dashboard", label: "Dashboard", path: "/dashboard" },
@@ -26,7 +27,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     : "?";
 
   return (
-    <div className="min-h-screen bg-[#0B0E14]">
+    <div className="min-h-screen bg-background">
       {/* Top nav */}
       <motion.header
         initial={{ y: -16, opacity: 0 }}
@@ -44,8 +45,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           </span>
         </Link>
 
-        {/* Right — avatar first, then name, then logout on small screens */}
+        {/* Right — theme toggle, avatar, name, then logout on small screens */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {isLoggedIn ? (
             <>
               <motion.div

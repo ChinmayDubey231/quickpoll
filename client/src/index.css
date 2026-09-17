@@ -2,15 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: 104 51 234;
+  --color-primary-container: 233 221 255;
+  --color-on-primary: 255 255 255;
+  --color-on-primary-container: 34 0 93;
+  --color-secondary: 0 122 106;
+  --color-secondary-container: 116 248 228;
+  --color-on-secondary: 255 255 255;
+  --color-on-secondary-container: 0 32 26;
+  --color-tertiary: 74 69 147;
+  --color-tertiary-container: 225 223 255;
+  --color-on-tertiary: 255 255 255;
+  --color-error: 186 26 26;
+  --color-error-container: 255 218 214;
+  --color-surface: 253 251 255;
+  --color-surface-dim: 221 217 224;
+  --color-surface-bright: 253 251 255;
+  --color-surface-container: 242 237 246;
+  --color-surface-container-low: 247 242 250;
+  --color-surface-container-high: 236 230 240;
+  --color-surface-container-highest: 230 225 234;
+  --color-surface-variant: 231 224 235;
+  --color-on-surface: 27 27 31;
+  --color-on-surface-variant: 72 69 78;
+  --color-background: 253 251 255;
+  --color-on-background: 27 27 31;
+  --color-outline: 121 116 126;
+  --color-outline-variant: 202 196 208;
+  --color-inverse-surface: 48 48 52;
+  --color-inverse-on-surface: 243 239 244;
+  --color-inverse-primary: 205 189 255;
+
+  --gradient-text-from: 104 51 234;
+  --gradient-text-to: 0 122 106;
+  --scrollbar-track: 253 251 255;
+  --scrollbar-thumb: 202 196 208;
+  --scrollbar-thumb-hover: 148 142 161;
+}
+
+.dark {
+  --color-primary: 205 189 255;
+  --color-primary-container: 124 77 255;
+  --color-on-primary: 55 0 150;
+  --color-on-primary-container: 252 246 255;
+  --color-secondary: 68 221 193;
+  --color-secondary-container: 0 190 164;
+  --color-on-secondary: 0 56 47;
+  --color-on-secondary-container: 0 70 59;
+  --color-tertiary: 189 194 255;
+  --color-tertiary-container: 97 106 197;
+  --color-on-tertiary: 27 36 127;
+  --color-error: 255 180 171;
+  --color-error-container: 147 0 10;
+  --color-surface: 19 19 19;
+  --color-surface-dim: 19 19 19;
+  --color-surface-bright: 57 57 57;
+  --color-surface-container: 32 31 31;
+  --color-surface-container-low: 28 27 27;
+  --color-surface-container-high: 42 42 42;
+  --color-surface-container-highest: 53 53 52;
+  --color-surface-variant: 53 53 52;
+  --color-on-surface: 229 226 225;
+  --color-on-surface-variant: 202 195 216;
+  --color-background: 19 19 19;
+  --color-on-background: 229 226 225;
+  --color-outline: 148 142 161;
+  --color-outline-variant: 73 68 85;
+  --color-inverse-surface: 229 226 225;
+  --color-inverse-on-surface: 49 48 48;
+  --color-inverse-primary: 104 51 234;
+
+  --gradient-text-from: 205 189 255;
+  --gradient-text-to: 68 221 193;
+  --scrollbar-track: 19 19 19;
+  --scrollbar-thumb: 48 54 61;
+  --scrollbar-thumb-hover: 69 77 89;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
-  background-color: #0b0e14;
-  color: #e5e2e1;
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-on-background));
   font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .material-symbols-outlined {
@@ -35,10 +114,10 @@ body {
 }
 
 .glass-card {
-  background: rgba(22, 27, 34, 0.72);
+  background: rgb(var(--color-surface-container) / 0.72);
   backdrop-filter: blur(16px);
-  border: 1px solid #30363d;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  border: 1px solid rgb(var(--color-outline-variant));
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .accent-glow {
@@ -64,7 +143,7 @@ body {
 }
 
 .gradient-text {
-  background-image: linear-gradient(90deg, #cdbdff, #44ddc1);
+  background-image: linear-gradient(90deg, rgb(var(--gradient-text-from)), rgb(var(--gradient-text-to)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -74,14 +153,14 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0e14;
+  background: rgb(var(--scrollbar-track));
 }
 ::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: rgb(var(--scrollbar-thumb));
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #454d59;
+  background: rgb(var(--scrollbar-thumb-hover));
 }
 
 @keyframes fadeIn {

@@ -21,7 +21,7 @@ export default function QRCode({ url, size = 160 }: QRCodeProps) {
   return (
     <div className="flex flex-col items-center gap-2">
       <canvas ref={canvasRef} className="rounded-lg" />
-      <p className="text-xs text-gray-400">Scan to vote</p>
+      <p className="text-xs text-on-surface-variant">Scan to vote</p>
     </div>
   );
 }
