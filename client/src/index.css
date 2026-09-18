@@ -84,12 +84,19 @@
   box-sizing: border-box;
 }
 
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, text-decoration-color;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+}
+
 body {
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-on-background));
   font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .material-symbols-outlined {
