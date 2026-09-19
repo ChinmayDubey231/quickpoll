@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
-import Layout from "../components/Layout";
 import ConfirmModal from "../components/ConfirmModal";
 import EmptyState from "../components/shared/EmptyState";
 import SkeletonCard from "../components/shared/SkeletonCard";
@@ -114,7 +113,7 @@ export default function Dashboard() {
   const livePolls = loading ? null : polls.filter((p) => p.isOpen).length;
 
   return (
-    <Layout>
+    <>
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -337,6 +336,6 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
-    </Layout>
+    </>
   );
 }
