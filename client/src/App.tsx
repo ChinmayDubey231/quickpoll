@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 import PageTransition from "./components/PageTransition";
+import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -18,62 +19,74 @@ const Protected = ({ children }: { children: ReactNode }) => {
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
 
+// Keeps the header/sidebar mounted once and only transitions the routed page content,
+// so switching tabs doesn't remount (and re-animate) the whole shell.
+function AppLayout() {
+  const location = useLocation();
+  return (
+    <Layout>
+      <AnimatePresence mode="wait" initial={false}>
+        <PageTransition key={location.pathname}>
+          <Outlet />
+        </PageTransition>
+      </AnimatePresence>
+    </Layout>
+  );
+}
+
 function AppRoutes() {
   const { isLoggedIn } = useAuth();
-  const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <PageTransition key={location.pathname}>
-        <Routes location={location}>
-          <Route
-            path="/login"
-            element={
-              isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <Protected>
-                <Dashboard />
-              </Protected>
-            }
-          />
-          <Route
-            path="/create"
-            element={
-              <Protected>
-                <CreatePoll />
-              </Protected>
-            }
-          />
-          <Route
-            path="/polls/:id/analytics"
-            element={
-              <Protected>
-                <PollAnalytics />
-              </Protected>
-            }
-          />
-          <Route path="/poll/:id" element={<PollView />} />
-          <Route path="/discover" element={<PollDiscovery />} />
-          <Route
-            path="/"
-            element={
-              <Navigate to={isLoggedIn ? "/dashboard" : "/login"} replace />
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </PageTransition>
-    </AnimatePresence>
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
+        }
+      />
+      <Route path="/poll/:id" element={<PollView />} />
+      <Route element={<AppLayout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <Protected>
+              <Dashboard />
+            </Protected>
+          }
+        />
+        <Route
+          path="/create"
+          element={
+            <Protected>
+              <CreatePoll />
+            </Protected>
+          }
+        />
+        <Route
+          path="/polls/:id/analytics"
+          element={
+            <Protected>
+              <PollAnalytics />
+            </Protected>
+          }
+        />
+        <Route path="/discover" element={<PollDiscovery />} />
+      </Route>
+      <Route
+        path="/"
+        element={
+          <Navigate to={isLoggedIn ? "/dashboard" : "/login"} replace />
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

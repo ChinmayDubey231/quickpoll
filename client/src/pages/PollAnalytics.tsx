@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { motion } from "framer-motion";
 import api from "../utils/api";
-import Layout from "../components/Layout";
 import VoteTimelineChart from "../components/VoteTimelineChart";
 import LiveBarChart from "../components/LiveBarChart";
 import IrvRoundsChart from "../components/IrvRoundsChart";
@@ -72,27 +71,23 @@ export default function PollAnalytics() {
 
   if (loading)
     return (
-      <Layout>
-        <div className="space-y-6 py-6">
-          <SkeletonCard lines={1} className="h-16" />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <SkeletonCard lines={2} />
-            <SkeletonCard lines={2} />
-            <SkeletonCard lines={2} />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SkeletonCard lines={4} className="h-52" />
-            <SkeletonCard lines={4} className="h-52" />
-          </div>
+      <div className="space-y-6 py-6">
+        <SkeletonCard lines={1} className="h-16" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
         </div>
-      </Layout>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <SkeletonCard lines={4} className="h-52" />
+          <SkeletonCard lines={4} className="h-52" />
+        </div>
+      </div>
     );
 
   if (error)
     return (
-      <Layout>
-        <ErrorState icon="error" title="Couldn't load analytics" description={error} backTo="/dashboard" backLabel="Back to dashboard" />
-      </Layout>
+      <ErrorState icon="error" title="Couldn't load analytics" description={error} backTo="/dashboard" backLabel="Back to dashboard" />
     );
 
   if (!poll || !analytics) return null;
@@ -100,7 +95,6 @@ export default function PollAnalytics() {
   const isOpen = poll.isOpen && (!poll.expiresAt || new Date(poll.expiresAt) > new Date());
 
   return (
-    <Layout>
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6 py-6">
         {/* Header */}
         <motion.section variants={fadeUp} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -340,6 +334,5 @@ export default function PollAnalytics() {
           </motion.footer>
         )}
       </motion.div>
-    </Layout>
   );
 }

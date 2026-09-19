@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
-import Layout from '../components/Layout';
 import ErrorMsg from '../components/shared/ErrorMsg';
 import { fadeUp, staggerContainer } from '../components/motion/variants';
 import type { PollType } from '../types/api';
@@ -66,7 +65,6 @@ export default function CreatePoll() {
   const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
   return (
-    <Layout>
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -240,6 +238,5 @@ export default function CreatePoll() {
           </motion.div>
         </form>
       </motion.div>
-    </Layout>
   );
 }

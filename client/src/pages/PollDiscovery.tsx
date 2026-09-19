@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
-import Layout from "../components/Layout";
 import SkeletonCard from "../components/shared/SkeletonCard";
 import EmptyState from "../components/shared/EmptyState";
 import ErrorMsg from "../components/shared/ErrorMsg";
@@ -43,7 +42,6 @@ export default function PollDiscovery() {
   };
 
   return (
-    <Layout>
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6 py-6">
         <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
@@ -100,6 +98,8 @@ export default function PollDiscovery() {
                   <motion.div key={poll._id} variants={listItem} layout whileHover={{ y: -3 }}>
                     <Link
                       to={`/poll/${poll._id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className={`glass-card rounded-xl p-5 hover:border-outline transition-colors block h-full ${focusRing}`}
                     >
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -150,6 +150,5 @@ export default function PollDiscovery() {
           </>
         )}
       </motion.div>
-    </Layout>
   );
 }
