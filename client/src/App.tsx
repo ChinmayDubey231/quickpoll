@@ -21,11 +21,18 @@ const Protected = ({ children }: { children: ReactNode }) => {
 
 // Keeps the header/sidebar mounted once and only transitions the routed page content,
 // so switching tabs doesn't remount (and re-animate) the whole shell.
+//
+// Deliberately NOT mode="wait": that gates mounting the new page on the old
+// page's exit animation finishing. If that exit-complete signal ever misfires
+// (framer-motion + fast/StrictMode-y re-renders can do this), the new page
+// never mounts and the content area is stuck blank until a full reload. The
+// default mode mounts the new page immediately regardless of the old one's
+// exit animation, so that failure mode can't happen.
 function AppLayout() {
   const location = useLocation();
   return (
     <Layout>
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence initial={false}>
         <PageTransition key={location.pathname}>
           <Outlet />
         </PageTransition>
