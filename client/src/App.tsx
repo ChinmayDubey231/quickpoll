@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 import PageTransition from "./components/PageTransition";
+import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -22,21 +22,22 @@ const Protected = ({ children }: { children: ReactNode }) => {
 // Keeps the header/sidebar mounted once and only transitions the routed page content,
 // so switching tabs doesn't remount (and re-animate) the whole shell.
 //
-// Deliberately NOT mode="wait": that gates mounting the new page on the old
-// page's exit animation finishing. If that exit-complete signal ever misfires
-// (framer-motion + fast/StrictMode-y re-renders can do this), the new page
-// never mounts and the content area is stuck blank until a full reload. The
-// default mode mounts the new page immediately regardless of the old one's
-// exit animation, so that failure mode can't happen.
+// No AnimatePresence here: it tracks exit-animation completion to decide when
+// to swap in the next page, and that tracking got stuck often enough in
+// practice to leave the content area permanently blank until a reload. Keying
+// PageTransition by pathname still gives every page a fade-in on mount via
+// plain React reconciliation (old page unmounts, new one mounts), with no
+// dependency on framer-motion's presence bookkeeping — just no fade-out for
+// the page being left.
 function AppLayout() {
   const location = useLocation();
   return (
     <Layout>
-      <AnimatePresence initial={false}>
-        <PageTransition key={location.pathname}>
+      <RouteErrorBoundary key={location.pathname}>
+        <PageTransition>
           <Outlet />
         </PageTransition>
-      </AnimatePresence>
+      </RouteErrorBoundary>
     </Layout>
   );
 }
