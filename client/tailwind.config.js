@@ -39,8 +39,8 @@ export default {
         'inverse-primary':        withOpacity('--color-inverse-primary'),
       },
       fontFamily: {
-        display: ['Hanken Grotesk', 'sans-serif'],
-        body:    ['Inter', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
+        body:    ['Plus Jakarta Sans', 'sans-serif'],
         mono:    ['JetBrains Mono', 'monospace'],
       },
       borderRadius: {

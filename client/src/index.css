@@ -95,7 +95,7 @@
 body {
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-on-background));
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
