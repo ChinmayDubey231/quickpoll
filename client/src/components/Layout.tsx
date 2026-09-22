@@ -104,7 +104,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <span className="relative material-symbols-outlined text-[20px]">
                   {item.icon}
                 </span>
-                <span className="relative font-mono text-xs tracking-wide">
+                <span className="relative font-display font-semibold text-sm tracking-tight">
                   {item.label}
                 </span>
               </Link>
@@ -122,7 +122,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               <span className="material-symbols-outlined text-[20px]">
                 logout
               </span>
-              <span className="font-mono text-xs tracking-wide">Sign Out</span>
+              <span className="font-display font-semibold text-sm tracking-tight">Sign Out</span>
             </button>
           </div>
         )}
@@ -155,7 +155,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               <span className="relative material-symbols-outlined text-[22px]">
                 {item.icon}
               </span>
-              <span className="relative text-[10px] font-mono">{item.label}</span>
+              <span className="relative text-[11px] font-display font-semibold">{item.label}</span>
             </Link>
           );
         })}
@@ -165,7 +165,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             className={`flex flex-col items-center gap-0.5 px-4 py-1 text-on-surface-variant hover:text-error transition-colors ${focusRing}`}
           >
             <span className="material-symbols-outlined text-[22px]">logout</span>
-            <span className="text-[10px] font-mono">Sign Out</span>
+            <span className="text-[11px] font-display font-semibold">Sign Out</span>
           </button>
         )}
       </nav>

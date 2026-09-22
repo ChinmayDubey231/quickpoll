@@ -7,7 +7,7 @@ import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import ErrorMsg from "../components/shared/ErrorMsg";
 import AuroraBackground from "../components/motion/AuroraBackground";
-import { fadeUp, staggerContainer } from "../components/motion/variants";
+import { fadeUp, popIn, staggerContainer } from "../components/motion/variants";
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
@@ -50,7 +50,14 @@ export default function Login() {
         {/* Logo + wordmark */}
         <motion.div variants={fadeUp} className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Logo size={40} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, rotate: -25 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
+              whileHover={{ rotate: -6, scale: 1.08 }}
+            >
+              <Logo size={40} />
+            </motion.div>
             <span className="font-display font-bold text-3xl gradient-text tracking-tight">
               QuickPoll
             </span>
@@ -60,10 +67,20 @@ export default function Login() {
           </p>
         </motion.div>
 
-        <motion.div variants={fadeUp} className="glass-card rounded-2xl p-8">
-          <h1 className="font-display font-bold text-2xl text-on-surface mb-1">
+        <motion.div
+          variants={fadeUp}
+          whileHover={{ y: -3, boxShadow: "0 20px 40px -20px rgba(124, 77, 255, 0.35)" }}
+          transition={{ type: "spring", stiffness: 300, damping: 24 }}
+          className="glass-card rounded-2xl p-8"
+        >
+          <motion.h1
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="font-display font-bold text-2xl text-on-surface mb-1"
+          >
             Welcome back
-          </h1>
+          </motion.h1>
           <p className="text-sm text-on-surface-variant mb-6">
             Sign in to your account
           </p>
@@ -72,8 +89,13 @@ export default function Login() {
             {error && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
+                animate={{
+                  opacity: 1,
+                  height: "auto",
+                  x: [0, -8, 8, -6, 6, -2, 2, 0],
+                }}
                 exit={{ opacity: 0, height: 0 }}
+                transition={{ x: { duration: 0.4, delay: 0.05 } }}
                 className="mb-4 overflow-hidden"
               >
                 <ErrorMsg message={error} />
@@ -81,12 +103,20 @@ export default function Login() {
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <motion.form
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
+            <motion.div variants={fadeUp}>
               <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
                 Email
               </label>
-              <input
+              <motion.input
+                whileFocus={{ scale: 1.015 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 name="email"
                 type="email"
                 value={form.email}
@@ -95,12 +125,14 @@ export default function Login() {
                 placeholder="you@example.com"
                 className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fadeUp}>
               <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
                 Password
               </label>
-              <input
+              <motion.input
+                whileFocus={{ scale: 1.015 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 name="password"
                 type="password"
                 value={form.password}
@@ -109,17 +141,46 @@ export default function Login() {
                 placeholder="••••••••"
                 className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
               />
-            </div>
+            </motion.div>
             <motion.button
+              variants={popIn}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.97 }}
               type="submit"
               disabled={loading}
               className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 mt-2 ${focusRing}`}
             >
-              {loading ? "Signing in…" : "Sign in"}
+              <AnimatePresence mode="wait" initial={false}>
+                {loading ? (
+                  <motion.span
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                      className="material-symbols-outlined text-[18px]"
+                    >
+                      progress_activity
+                    </motion.span>
+                    Signing in…
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    Sign in
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.button>
-          </form>
+          </motion.form>
 
           <p className="mt-6 text-center text-sm text-on-surface-variant">
             No account?{" "}
