@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import type { UserDTO } from '../types/api';
 
@@ -14,6 +15,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState<UserDTO | null>(() => {
     try {
       const stored = localStorage.getItem('user');
@@ -44,12 +47,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return data.user as UserDTO;
   }, []);
 
+  // Navigate explicitly rather than relying on <Protected> to bounce us: the
+  // public routes (/discover, /poll/:id) render fine logged out, so signing out
+  // from one of those would otherwise leave you sitting on the same page.
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
-  }, []);
+    navigate('/login', { replace: true });
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ user, token, register, login, logout, isLoggedIn: !!user }}>

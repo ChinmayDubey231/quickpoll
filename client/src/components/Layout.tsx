@@ -3,12 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
+import NavIcon, { type NavIconName } from "./motion/NavIcon";
 import ThemeToggle from "./ThemeToggle";
 
-const navItems = [
+const navItems: Array<{ icon: NavIconName; label: string; path: string }> = [
   { icon: "dashboard", label: "Dashboard", path: "/dashboard" },
-  { icon: "add_circle", label: "New Poll", path: "/create" },
-  { icon: "explore", label: "Discover", path: "/discover" },
+  { icon: "create", label: "New Poll", path: "/create" },
+  { icon: "discover", label: "Discover", path: "/discover" },
 ];
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
@@ -61,11 +62,10 @@ export default function Layout({ children }: { children: ReactNode }) {
               </span>
               <button
                 onClick={logout}
-                className={`lg:hidden flex items-center gap-1 px-2.5 py-1.5 text-sm text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-colors ${focusRing}`}
+                aria-label="Sign out"
+                className={`group lg:hidden flex items-center gap-1 px-2.5 py-1.5 text-sm text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-colors ${focusRing}`}
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  logout
-                </span>
+                <NavIcon name="logout" size={18} />
               </button>
             </>
           ) : (
@@ -101,9 +101,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-                <span className="relative material-symbols-outlined text-[20px]">
-                  {item.icon}
-                </span>
+                <NavIcon name={item.icon} active={active} size={20} />
                 <span className="relative font-display font-semibold text-sm tracking-tight">
                   {item.label}
                 </span>
@@ -117,11 +115,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="mt-auto pt-3 border-t border-outline-variant">
             <button
               onClick={logout}
-              className={`flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:text-error w-full transition-colors rounded-lg hover:bg-surface-container-high text-sm ${focusRing}`}
+              className={`group flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:text-error w-full transition-colors rounded-lg hover:bg-surface-container-high text-sm ${focusRing}`}
             >
-              <span className="material-symbols-outlined text-[20px]">
-                logout
-              </span>
+              <NavIcon name="logout" size={20} />
               <span className="font-display font-semibold text-sm tracking-tight">Sign Out</span>
             </button>
           </div>
@@ -152,9 +148,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   transition={{ type: "spring", stiffness: 400, damping: 32 }}
                 />
               )}
-              <span className="relative material-symbols-outlined text-[22px]">
-                {item.icon}
-              </span>
+              <NavIcon name={item.icon} active={active} size={22} />
               <span className="relative text-[11px] font-display font-semibold">{item.label}</span>
             </Link>
           );
@@ -162,9 +156,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         {isLoggedIn && (
           <button
             onClick={logout}
-            className={`flex flex-col items-center gap-0.5 px-4 py-1 text-on-surface-variant hover:text-error transition-colors ${focusRing}`}
+            className={`group flex flex-col items-center gap-0.5 px-4 py-1 text-on-surface-variant hover:text-error transition-colors ${focusRing}`}
           >
-            <span className="material-symbols-outlined text-[22px]">logout</span>
+            <NavIcon name="logout" size={22} />
             <span className="text-[11px] font-display font-semibold">Sign Out</span>
           </button>
         )}
