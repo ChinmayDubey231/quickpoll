@@ -1,8 +1,9 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import ErrorMsg from "../components/shared/ErrorMsg";
@@ -22,6 +23,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
 
+  // The API host sleeps when idle (Render free tier); ping it on page load so
+  // it's awake by the time the visitor submits.
+  useEffect(() => {
+    api.get("/health").catch(() => {});
+  }, []);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -32,6 +39,10 @@ export default function Login() {
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
+      if (isAxiosError(err) && !err.response) {
+        setError("Can't reach the server — it may be waking up. Try again in a few seconds.");
+        return;
+      }
       const message = isAxiosError(err) ? err.response?.data?.message : undefined;
       setError(message || "Login failed");
     } finally {
