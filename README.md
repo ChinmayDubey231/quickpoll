@@ -108,7 +108,8 @@ quickpoll/
         ├── socket/pollHandler.ts   # join-poll room logic
         ├── workers/pollWorker.ts   # BullMQ auto-close worker
         ├── utils/irv.ts            # instant-runoff tallying (unit tested)
-        ├── seed.ts                 # dev seed (3 users, 10 polls incl. multi/ranked)
+        ├── demo/                   # demo data: content.ts (poll specs), generate.ts (seeded builder)
+        ├── seed.ts                 # npm run seed — wipe + load demo data
         └── index.ts
 ```
 
@@ -177,13 +178,17 @@ cd client && npm run build                # tsc --noEmit && vite build → clien
 cd server && npm run seed
 ```
 
-Creates 3 accounts with 10 realistic polls (including a multi-select and a ranked-choice poll) and sample votes across all of them.
+Loads 5 accounts and 20 polls with ~900 votes, ~50 comments and ~550 reactions. The mix covers single, multi-select and ranked-choice polls; live, expiring, manually closed and auto-expired states; public (Discover) and private polls; and one brand-new poll with no votes. Vote timelines spike at launch and taper off, and the pizza poll is built so the first-round leader loses the instant runoff. Generation is deterministic (seeded PRNG), and poll content lives in `server/src/demo/content.ts`. `npm run seed` wipes existing data first.
+
+The server also seeds this demo data automatically on startup when the database has no users, so a fresh deployment isn't empty. Existing data is never touched; set `SEED_DEMO_DATA=false` to disable it.
 
 | Email             | Password    |
 | ----------------- | ----------- |
 | alice@example.com | password123 |
 | bob@example.com   | password123 |
 | carol@example.com | password123 |
+| priya@example.com | password123 |
+| marcus@example.com | password123 |
 
 ### 6. Run server tests
 

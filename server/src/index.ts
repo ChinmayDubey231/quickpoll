@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 
 import connectDB from './config/db.js';
+import { seedDemoDataIfEmpty } from './demo/index.js';
 import { setIO } from './config/socket.js';
 import type { ClientToServerEvents, ServerToClientEvents } from './types/socket.js';
 
@@ -64,6 +65,12 @@ const PORT = process.env.PORT || 5000;
 
 const start = async () => {
   await connectDB();
+  // Demo data is a nice-to-have — never let a seeding failure block boot.
+  try {
+    await seedDemoDataIfEmpty();
+  } catch (err) {
+    console.error('❌ Demo seed failed:', err instanceof Error ? err.message : err);
+  }
   httpServer.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`   Socket.io  ✅`);
