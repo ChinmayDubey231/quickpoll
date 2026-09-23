@@ -14,10 +14,12 @@ const app = express();
 // Allowed browser origins, from CLIENT_URL (comma-separated for several).
 // Trailing slashes are stripped: browsers send Origin without one, so
 // "https://app.vercel.app/" would otherwise never match and CORS would fail.
+// A bare host ("app.vercel.app") is assumed to be https for the same reason.
 const clientOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((o) => o.trim().replace(/\/+$/, ''))
-  .filter(Boolean);
+  .filter(Boolean)
+  .map((o) => (/^https?:\/\//.test(o) ? o : `https://${o}`));
 const httpServer = createServer(app);
 
 // ─── Socket.io ────────────────────────────────────────────────────────────────
