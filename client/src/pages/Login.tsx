@@ -11,29 +11,42 @@ import { fadeUp, popIn, staggerContainer } from "../components/motion/variants";
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
+// Seeded by the server's demo data (server/src/demo/content.ts)
+const DEMO_ACCOUNT = { email: "alice@example.com", password: "password123" };
+
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const signIn = async (email: string, password: string, setBusy: (busy: boolean) => void) => {
     setError("");
-    setLoading(true);
+    setBusy(true);
     try {
-      await login(form.email, form.password);
+      await login(email, password);
       navigate("/dashboard");
     } catch (err) {
       const message = isAxiosError(err) ? err.response?.data?.message : undefined;
       setError(message || "Login failed");
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    signIn(form.email, form.password, setLoading);
+  };
+
+  const handleDemo = () => {
+    setForm(DEMO_ACCOUNT);
+    signIn(DEMO_ACCOUNT.email, DEMO_ACCOUNT.password, setDemoLoading);
   };
 
   return (
@@ -147,7 +160,7 @@ export default function Login() {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.97 }}
               type="submit"
-              disabled={loading}
+              disabled={loading || demoLoading}
               className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 mt-2 ${focusRing}`}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -181,6 +194,31 @@ export default function Login() {
               </AnimatePresence>
             </motion.button>
           </motion.form>
+
+          <div className="my-6 flex items-center gap-3 text-xs font-mono tracking-widest text-on-surface-variant uppercase">
+            <span className="h-px flex-1 bg-outline-variant" />
+            or
+            <span className="h-px flex-1 bg-outline-variant" />
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.97 }}
+            type="button"
+            onClick={handleDemo}
+            disabled={loading || demoLoading}
+            className={`w-full py-3 border border-primary/40 text-primary font-display font-bold rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2 ${focusRing}`}
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              {demoLoading ? "progress_activity" : "rocket_launch"}
+            </span>
+            {demoLoading ? "Opening demo…" : "Try the demo account"}
+          </motion.button>
+          <p className="mt-2 text-center text-xs text-on-surface-variant">
+            Just looking around? Sign in as{" "}
+            <span className="font-mono text-on-surface">{DEMO_ACCOUNT.email}</span> /{" "}
+            <span className="font-mono text-on-surface">{DEMO_ACCOUNT.password}</span>
+          </p>
 
           <p className="mt-6 text-center text-sm text-on-surface-variant">
             No account?{" "}
