@@ -172,6 +172,8 @@ cd server && npm run build && npm start   # compiles to dist/, then runs it
 cd client && npm run build                # tsc --noEmit && vite build → client/dist/
 ```
 
+When deploying (e.g. Render + Vercel), set `CLIENT_URL` on the server to the frontend's origin (comma-separate several), and set `VITE_API_URL` / `VITE_SOCKET_URL` on the client to the server's URL. The `VITE_*` values are baked in at build time, so **redeploy the client after changing them** — otherwise the build still points at `localhost:5000`.
+
 ### 5. Seed demo data
 
 ```bash
