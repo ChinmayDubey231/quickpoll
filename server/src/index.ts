@@ -10,6 +10,16 @@ import { setIO } from './config/socket.js';
 import type { ClientToServerEvents, ServerToClientEvents } from './types/socket.js';
 
 const app = express();
+
+// Allowed browser origins, from CLIENT_URL (comma-separated for several).
+// Trailing slashes are stripped: browsers send Origin without one, so
+// "https://app.vercel.app/" would otherwise never match and CORS would fail.
+// A bare host ("app.vercel.app") is assumed to be https for the same reason.
+const clientOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean)
+  .map((o) => (/^https?:\/\//.test(o) ? o : `https://${o}`));
 const httpServer = createServer(app);
 
 // ─── Socket.io ────────────────────────────────────────────────────────────────
@@ -17,7 +27,7 @@ const httpServer = createServer(app);
 // can call getIO() without importing index.js (avoids circular ESM deps).
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: clientOrigins,
     methods: ['GET', 'POST'],
   },
 });
@@ -28,7 +38,7 @@ setIO(io);
 // address, collapsing every visitor into one rate-limit bucket and one
 // VOTE_GUARD IP key. Trust the first hop so req.ip is the real client.
 app.set('trust proxy', 1);
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors({ origin: clientOrigins }));
 app.use(express.json());
 
 // ─── Health check ─────────────────────────────────────────────────────────────
