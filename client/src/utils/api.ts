@@ -1,7 +1,11 @@
 import axios, { type AxiosError } from 'axios';
 
+// Accept VITE_API_URL with or without a trailing slash or the /api suffix,
+// so "https://host.onrender.com" and "https://host.onrender.com/api/" both work.
+const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: apiBase.endsWith('/api') ? apiBase : `${apiBase}/api`,
 });
 
 // Attach JWT token to every request if present
