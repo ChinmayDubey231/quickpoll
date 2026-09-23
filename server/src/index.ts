@@ -23,6 +23,10 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 setIO(io);
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
+// Behind a hosting proxy (Render etc.) req.ip would otherwise be the proxy's
+// address, collapsing every visitor into one rate-limit bucket and one
+// VOTE_GUARD IP key. Trust the first hop so req.ip is the real client.
+app.set('trust proxy', 1);
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
 app.use(express.json());
 
