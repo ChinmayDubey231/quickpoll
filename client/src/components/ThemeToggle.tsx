@@ -13,7 +13,7 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
       whileTap={{ scale: 0.92 }}
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       title={isDark ? "Switch to light theme" : "Switch to dark theme"}
-      className={`relative flex items-center justify-center w-9 h-9 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
+      className={`flex items-center justify-center w-9 h-9 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
