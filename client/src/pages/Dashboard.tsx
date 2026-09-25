@@ -130,13 +130,13 @@ export default function Dashboard() {
               Manage and monitor your polls
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 w-full sm:w-auto">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleExportCSV}
               disabled={exporting || loading || polls.length === 0}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-surface-container text-on-surface font-display font-bold rounded-xl transition-colors text-sm border border-outline-variant disabled:opacity-40 disabled:cursor-not-allowed ${focusRing}`}
+              className={`inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 whitespace-nowrap bg-surface-container text-on-surface font-display font-bold rounded-xl transition-colors text-sm border border-outline-variant disabled:opacity-40 disabled:cursor-not-allowed ${focusRing}`}
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
               {exporting ? "Exporting…" : "Export CSV"}
@@ -144,7 +144,7 @@ export default function Dashboard() {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/create"
-                className={`inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors text-sm ${focusRing}`}
+                className={`w-full inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 whitespace-nowrap bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors text-sm ${focusRing}`}
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 New Poll
@@ -154,7 +154,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Stat cards */}
-        <motion.div variants={fadeUp} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <motion.div variants={fadeUp} className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {[
             {
               label: "Total Polls",
@@ -180,17 +180,17 @@ export default function Dashboard() {
           ].map((s) => (
             <div
               key={s.label}
-              className={`glass-card accent-glow rounded-xl p-5 ${s.span}`}
+              className={`glass-card accent-glow rounded-xl p-4 sm:p-5 min-w-0 ${s.span}`}
             >
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-mono tracking-widest text-on-surface-variant uppercase">
+              <div className="flex justify-between items-start gap-2 mb-3">
+                <span className="text-[10px] font-mono tracking-wider sm:tracking-widest text-on-surface-variant uppercase">
                   {s.label}
                 </span>
                 <span className={`material-symbols-outlined text-[20px] ${s.color}`}>
                   {s.icon}
                 </span>
               </div>
-              <span className="font-display font-bold text-4xl text-on-surface">
+              <span className="font-display font-bold text-3xl sm:text-4xl text-on-surface">
                 {s.value === null ? (
                   <span className="inline-block w-12 h-8 bg-surface-container-high rounded skeleton-shimmer" />
                 ) : (
@@ -239,9 +239,9 @@ export default function Dashboard() {
                     exit="exit"
                     layout
                     whileHover={{ y: -2 }}
-                    className="glass-card rounded-xl p-5 hover:border-outline transition-colors group"
+                    className="glass-card rounded-xl p-4 sm:p-5 hover:border-outline transition-colors group"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <StatusBadge poll={poll} />
@@ -274,7 +274,7 @@ export default function Dashboard() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <div className="flex items-center justify-end gap-1 -mx-2 -mb-2 pt-2 border-t border-outline-variant sm:m-0 sm:p-0 sm:border-0 sm:opacity-60 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                         <button
                           onClick={() => copyLink(poll._id)}
                           title="Copy share link"
