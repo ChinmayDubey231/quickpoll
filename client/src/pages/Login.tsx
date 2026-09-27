@@ -8,6 +8,7 @@ import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
 import ErrorMsg from "../components/shared/ErrorMsg";
 import AuroraBackground from "../components/motion/AuroraBackground";
+import AuthShowcase from "../components/AuthShowcase";
 import { fadeUp, popIn, staggerContainer } from "../components/motion/variants";
 
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
@@ -60,188 +61,195 @@ export default function Login() {
     signIn(DEMO_ACCOUNT.email, DEMO_ACCOUNT.password, setDemoLoading);
   };
 
+  // overflow-x-clip rather than overflow-hidden on the root: the latter would stop the form column sticking
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-clip lg:grid lg:grid-cols-2 xl:grid-cols-[3fr_2fr]">
       <AuroraBackground />
       <ThemeToggle className="fixed top-4 right-4 z-10" />
 
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-md relative"
-      >
-        {/* Logo + wordmark */}
-        <motion.div variants={fadeUp} className="flex flex-col items-center mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5, rotate: -25 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
-              whileHover={{ rotate: -6, scale: 1.08 }}
-            >
-              <Logo size={40} />
-            </motion.div>
-            <span className="font-display font-bold text-3xl gradient-text tracking-tight">
-              QuickPoll
-            </span>
-          </div>
-          <p className="text-on-surface-variant text-sm">
-            Real-time polling, live results
-          </p>
-        </motion.div>
+      {/* Animated product preview — left column on lg+, not rendered below that */}
+      <AuthShowcase />
 
+      {/* Sticky so the form stays centred in view when the showcase is taller than the screen */}
+      <main className="min-h-screen flex items-center justify-center px-4 py-8 lg:px-10 lg:sticky lg:top-0 lg:self-start">
         <motion.div
-          variants={fadeUp}
-          whileHover={{ y: -3, boxShadow: "0 20px 40px -20px rgba(124, 77, 255, 0.35)" }}
-          transition={{ type: "spring", stiffness: 300, damping: 24 }}
-          className="glass-card rounded-2xl p-8"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="w-full max-w-md relative"
         >
-          <motion.h1
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="font-display font-bold text-2xl text-on-surface mb-1"
-          >
-            Welcome back
-          </motion.h1>
-          <p className="text-sm text-on-surface-variant mb-6">
-            Sign in to your account
-          </p>
-
-          <AnimatePresence>
-            {error && (
+          {/* Logo + wordmark — the showcase carries the branding on lg+ */}
+          <motion.div variants={fadeUp} className="flex flex-col items-center mb-8 lg:hidden">
+            <div className="flex items-center gap-3 mb-2">
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{
-                  opacity: 1,
-                  height: "auto",
-                  x: [0, -8, 8, -6, 6, -2, 2, 0],
-                }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ x: { duration: 0.4, delay: 0.05 } }}
-                className="mb-4 overflow-hidden"
+                initial={{ opacity: 0, scale: 0.5, rotate: -25 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
+                whileHover={{ rotate: -6, scale: 1.08 }}
               >
-                <ErrorMsg message={error} />
+                <Logo size={40} />
               </motion.div>
-            )}
-          </AnimatePresence>
+              <span className="font-display font-bold text-3xl gradient-text tracking-tight">
+                QuickPoll
+              </span>
+            </div>
+            <p className="text-on-surface-variant text-sm">
+              Real-time polling, live results
+            </p>
+          </motion.div>
 
-          <motion.form
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            onSubmit={handleSubmit}
-            className="space-y-4"
+          <motion.div
+            variants={fadeUp}
+            whileHover={{ y: -3, boxShadow: "0 20px 40px -20px rgba(124, 77, 255, 0.35)" }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className="glass-card rounded-2xl p-6 sm:p-8"
           >
-            <motion.div variants={fadeUp}>
-              <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
-                Email
-              </label>
-              <motion.input
-                whileFocus={{ scale: 1.015 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                placeholder="you@example.com"
-                className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
-              />
-            </motion.div>
-            <motion.div variants={fadeUp}>
-              <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
-                Password
-              </label>
-              <motion.input
-                whileFocus={{ scale: 1.015 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                placeholder="••••••••"
-                className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
-              />
-            </motion.div>
+            <motion.h1
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="font-display font-bold text-2xl text-on-surface mb-1"
+            >
+              Welcome back
+            </motion.h1>
+            <p className="text-sm text-on-surface-variant mb-6">
+              Sign in to your account
+            </p>
+
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{
+                    opacity: 1,
+                    height: "auto",
+                    x: [0, -8, 8, -6, 6, -2, 2, 0],
+                  }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ x: { duration: 0.4, delay: 0.05 } }}
+                  className="mb-4 overflow-hidden"
+                >
+                  <ErrorMsg message={error} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <motion.form
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              onSubmit={handleSubmit}
+              className="space-y-4"
+            >
+              <motion.div variants={fadeUp}>
+                <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
+                  Email
+                </label>
+                <motion.input
+                  whileFocus={{ scale: 1.015 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="you@example.com"
+                  className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
+                />
+              </motion.div>
+              <motion.div variants={fadeUp}>
+                <label className="block text-xs font-mono tracking-widest text-on-surface-variant uppercase mb-2">
+                  Password
+                </label>
+                <motion.input
+                  whileFocus={{ scale: 1.015 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/60 focus:bg-surface-container-high transition-all ${focusRing}`}
+                />
+              </motion.div>
+              <motion.button
+                variants={popIn}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading || demoLoading}
+                className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 mt-2 ${focusRing}`}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {loading ? (
+                    <motion.span
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="inline-flex items-center gap-2"
+                    >
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                        className="material-symbols-outlined text-[18px]"
+                      >
+                        progress_activity
+                      </motion.span>
+                      Signing in…
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="idle"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      Sign in
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </motion.form>
+
+            <div className="my-6 flex items-center gap-3 text-xs font-mono tracking-widest text-on-surface-variant uppercase">
+              <span className="h-px flex-1 bg-outline-variant" />
+              or
+              <span className="h-px flex-1 bg-outline-variant" />
+            </div>
+
             <motion.button
-              variants={popIn}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.97 }}
-              type="submit"
+              type="button"
+              onClick={handleDemo}
               disabled={loading || demoLoading}
-              className={`w-full py-3 bg-primary-container text-on-primary-container font-display font-bold rounded-xl transition-colors disabled:opacity-50 mt-2 ${focusRing}`}
+              className={`w-full py-3 border border-primary/40 text-primary font-display font-bold rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2 ${focusRing}`}
             >
-              <AnimatePresence mode="wait" initial={false}>
-                {loading ? (
-                  <motion.span
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="inline-flex items-center gap-2"
-                  >
-                    <motion.span
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                      className="material-symbols-outlined text-[18px]"
-                    >
-                      progress_activity
-                    </motion.span>
-                    Signing in…
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    Sign in
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <span className="material-symbols-outlined text-[18px]">
+                {demoLoading ? "progress_activity" : "rocket_launch"}
+              </span>
+              {demoLoading ? "Opening demo…" : "Try the demo account"}
             </motion.button>
-          </motion.form>
+            <p className="mt-2 text-center text-xs text-on-surface-variant">
+              Just looking around? Sign in as{" "}
+              <span className="font-mono text-on-surface">{DEMO_ACCOUNT.email}</span> /{" "}
+              <span className="font-mono text-on-surface">{DEMO_ACCOUNT.password}</span>
+            </p>
 
-          <div className="my-6 flex items-center gap-3 text-xs font-mono tracking-widest text-on-surface-variant uppercase">
-            <span className="h-px flex-1 bg-outline-variant" />
-            or
-            <span className="h-px flex-1 bg-outline-variant" />
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.97 }}
-            type="button"
-            onClick={handleDemo}
-            disabled={loading || demoLoading}
-            className={`w-full py-3 border border-primary/40 text-primary font-display font-bold rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2 ${focusRing}`}
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              {demoLoading ? "progress_activity" : "rocket_launch"}
-            </span>
-            {demoLoading ? "Opening demo…" : "Try the demo account"}
-          </motion.button>
-          <p className="mt-2 text-center text-xs text-on-surface-variant">
-            Just looking around? Sign in as{" "}
-            <span className="font-mono text-on-surface">{DEMO_ACCOUNT.email}</span> /{" "}
-            <span className="font-mono text-on-surface">{DEMO_ACCOUNT.password}</span>
-          </p>
-
-          <p className="mt-6 text-center text-sm text-on-surface-variant">
-            No account?{" "}
-            <Link
-              to="/register"
-              className="text-primary font-semibold hover:underline"
-            >
-              Create one
-            </Link>
-          </p>
+            <p className="mt-6 text-center text-sm text-on-surface-variant">
+              No account?{" "}
+              <Link
+                to="/register"
+                className="text-primary font-semibold hover:underline"
+              >
+                Create one
+              </Link>
+            </p>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </main>
     </div>
   );
 }
