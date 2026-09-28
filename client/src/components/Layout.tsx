@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <motion.div whileHover={{ rotate: -6, scale: 1.05 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
             <Logo size={28} />
           </motion.div>
-          <span className="font-display font-bold text-xl gradient-text tracking-tight">
+          <span className="font-brand font-semibold text-xl text-on-surface tracking-[-0.02em]">
             QuickPoll
           </span>
         </Link>

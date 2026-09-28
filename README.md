@@ -70,8 +70,7 @@ quickpoll/
 │       │   ├── socket.ts           # singleton, typed socket.io-client
 │       │   └── chartTheme.ts       # Chart.js colors mirroring Tailwind palette
 │       ├── pages/
-│       │   ├── Login.tsx
-│       │   ├── Register.tsx
+│       │   ├── Login.tsx           # sign-in + sign-up (/login, /register)
 │       │   ├── Dashboard.tsx
 │       │   ├── CreatePoll.tsx
 │       │   ├── PollView.tsx        # public voter page
@@ -79,7 +78,7 @@ quickpoll/
 │       │   └── PollDiscovery.tsx   # public poll browsing
 │       └── components/
 │           ├── Layout.tsx          # sidebar + topnav
-│           ├── Logo.tsx            # SVG logo mark
+│           ├── Logo.tsx            # SVG logo mark (also public/favicon.svg)
 │           ├── PageTransition.tsx  # fade between routes
 │           ├── ConfirmModal.tsx    # delete confirmation
 │           ├── LiveBarChart.tsx

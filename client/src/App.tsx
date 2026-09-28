@@ -7,7 +7,6 @@ import PageTransition from "./components/PageTransition";
 import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreatePoll from "./pages/CreatePoll";
 import PollView from "./pages/PollView";
@@ -47,18 +46,17 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* One layout route for both, so switching between them keeps the page
+          mounted — the card slides between forms and the live poll keeps counting.
+          Login reads the pathname to pick which form is showing. */}
       <Route
-        path="/login"
         element={
           isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
         }
-      />
-      <Route
-        path="/register"
-        element={
-          isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
-        }
-      />
+      >
+        <Route path="/login" />
+        <Route path="/register" />
+      </Route>
       <Route path="/poll/:id" element={<PollView />} />
       <Route element={<AppLayout />}>
         <Route

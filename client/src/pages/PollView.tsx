@@ -210,7 +210,7 @@ export default function PollView() {
         {/* Left — logo + wordmark */}
         <div className="flex items-center gap-2.5">
           <Logo size={28} />
-          <span className="font-display font-bold text-xl gradient-text tracking-tight">
+          <span className="font-brand font-semibold text-xl text-on-surface tracking-[-0.02em]">
             QuickPoll
           </span>
         </div>
