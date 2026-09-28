@@ -17,11 +17,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// If server returns 401, clear stale token and redirect to login
+// If server returns 401, clear stale token and redirect to login. A 401 from
+// /auth/* is a wrong password rather than an expired session, so let the form show it.
 api.interceptors.response.use(
   (res) => res,
   (err: AxiosError) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && !err.config?.url?.startsWith('/auth/')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
