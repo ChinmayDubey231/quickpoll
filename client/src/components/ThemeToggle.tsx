@@ -8,7 +8,7 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
   return (
     <motion.button
       type="button"
-      onClick={toggleTheme}
+      onClick={() => toggleTheme()}
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.92 }}
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}

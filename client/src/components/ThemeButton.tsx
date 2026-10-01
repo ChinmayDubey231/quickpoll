@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "../context/ThemeContext";
 
 // Sun/moon toggle for the screens styled with the .qp-ui palette. It shows the
-// theme you'd switch to, and the icon spins through whenever it changes.
+// theme you'd switch to, the icon spins through whenever it changes, and the
+// new theme spreads out from the button.
 export default function ThemeButton() {
   const { theme, toggleTheme } = useTheme();
   const dark = theme === "dark";
@@ -11,7 +12,11 @@ export default function ThemeButton() {
   return (
     <motion.button
       type="button"
-      onClick={toggleTheme}
+      onClick={(e) => {
+        // The new theme is revealed from the centre of this button
+        const r = e.currentTarget.getBoundingClientRect();
+        toggleTheme({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      }}
       whileTap={{ scale: 0.92 }}
       aria-label={label}
       title={label}

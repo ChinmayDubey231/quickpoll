@@ -257,3 +257,12 @@ body {
     --qp-card-w: 400px;
   }
 }
+
+/* Theme switch: the new theme is revealed by a growing circle (see toggleTheme in
+   ThemeContext), so turn off the default crossfade, which would blend text into
+   its background halfway through */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
