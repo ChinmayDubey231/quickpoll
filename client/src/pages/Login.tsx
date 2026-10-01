@@ -14,9 +14,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { useReducedMotion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import api from "../utils/api";
 import Logo from "../components/Logo";
+import ThemeButton from "../components/ThemeButton";
+import RollingNumber from "../components/motion/RollingNumber";
 
 // Serves both /login and /register (see App.tsx): the card holds both forms
 // and slides between them, while a decorative live poll fills the page behind it.
@@ -63,21 +64,6 @@ function useMediaQuery(query: string) {
 
 /* ------------------------------ live poll preview ------------------------------ */
 
-// Each digit is keyed by its place and value, so only the digits that change
-// remount and roll in.
-function RollingNumber({ value, className = "" }: { value: number; className?: string }) {
-  const chars = value.toLocaleString("en-US").split("");
-  return (
-    <span className={`inline-flex tabular-nums ${className}`}>
-      {chars.map((ch, i) => (
-        <span key={`${chars.length - i}:${ch}`} className="inline-block motion-safe:animate-qp-roll">
-          {ch}
-        </span>
-      ))}
-    </span>
-  );
-}
-
 // Returns two grid items — the headline row and the full-bleed bars — which
 // the page grid places around the sign-in card.
 function PollPreview() {
@@ -116,10 +102,12 @@ function PollPreview() {
 
   return (
     <>
+      {/* Left column only, so the card can rise beside it; the right padding
+          lines the vote total up with the percentages below */}
       <section
         aria-hidden="true"
         style={{ animationDelay: "100ms" }}
-        className="col-span-full row-start-1 flex items-end justify-between gap-8 px-12 pb-8 pt-2 motion-safe:animate-qp-in"
+        className="col-start-1 row-start-1 flex items-end justify-between gap-8 pb-8 pl-12 pr-[72px] pt-2 motion-safe:animate-qp-in"
       >
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex items-center gap-2.5 font-brand-mono text-[13px] tracking-[.04em] text-qp-muted">
@@ -130,7 +118,7 @@ function PollPreview() {
             {POLL_QUESTION}
           </h2>
         </div>
-        <div className="flex w-[var(--qp-card-w)] shrink-0 items-baseline justify-end gap-2.5">
+        <div className="flex shrink-0 items-baseline gap-2.5">
           <RollingNumber
             value={total}
             className="text-[40px] font-medium leading-none tracking-[-0.035em] xl:text-[52px]"
@@ -179,35 +167,6 @@ function PollPreview() {
         })}
       </div>
     </>
-  );
-}
-
-/* ---------------------------------- chrome ---------------------------------- */
-
-function ThemeButton() {
-  const { theme, toggleTheme } = useTheme();
-  const dark = theme === "dark";
-  const label = dark ? "Switch to light theme" : "Switch to dark theme";
-
-  return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      aria-label={label}
-      title={label}
-      className={`grid h-10 w-10 place-items-center rounded-full border border-qp-line text-qp-ink hover:bg-qp-track ${focusRing}`}
-    >
-      {dark ? (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-        </svg>
-      ) : (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </svg>
-      )}
-    </button>
   );
 }
 
@@ -277,7 +236,7 @@ interface FieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "classN
 
 function Field({ id, label, invalid, inputRef, trailing, hint, ...input }: FieldProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 short:gap-1.5">
       <label htmlFor={id} className="text-sm font-medium">
         {label}
       </label>
@@ -287,7 +246,7 @@ function Field({ id, label, invalid, inputRef, trailing, hint, ...input }: Field
           ref={inputRef}
           aria-invalid={invalid || undefined}
           {...input}
-          className={`h-12 w-full rounded-[10px] border bg-qp-field px-3.5 text-base text-qp-ink outline-none [transition:border-color_.2s,box-shadow_.2s] placeholder:text-qp-muted placeholder:opacity-75 focus:border-qp-accent focus:shadow-[0_0_0_3px_var(--qp-ring)] ${
+          className={`h-12 w-full rounded-[10px] border short:h-11 bg-qp-field px-3.5 text-base text-qp-ink outline-none [transition:border-color_.2s,box-shadow_.2s] placeholder:text-qp-muted placeholder:opacity-75 focus:border-qp-accent focus:shadow-[0_0_0_3px_var(--qp-ring)] ${
             trailing ? "pr-[72px]" : ""
           } ${invalid ? "border-qp-error" : "border-qp-fieldline"}`}
         />
@@ -304,7 +263,7 @@ function RevealButton({ shown, onToggle }: { shown: boolean; onToggle: () => voi
       type="button"
       onClick={onToggle}
       aria-label={shown ? "Hide password" : "Show password"}
-      className={`absolute right-1 top-1 h-10 rounded-lg px-3 text-sm font-medium text-qp-muted hover:text-qp-ink ${focusRing}`}
+      className={`absolute right-1 top-1 h-10 rounded-lg px-3 short:h-9 text-sm font-medium text-qp-muted hover:text-qp-ink ${focusRing}`}
     >
       {shown ? "Hide" : "Show"}
     </button>
@@ -316,7 +275,7 @@ function SubmitButton({ busy, loading, children }: { busy: boolean; loading: boo
     <button
       type="submit"
       disabled={busy}
-      className={`mt-6 flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-qp-accent text-base font-semibold text-qp-accent-fg [transition:filter_.2s,transform_.12s] enabled:hover:brightness-110 enabled:active:scale-[.985] disabled:cursor-default ${focusRing}`}
+      className={`mt-6 flex h-12 items-center justify-center gap-2.5 rounded-[10px] short:mt-5 short:h-11 bg-qp-accent text-base font-semibold text-qp-accent-fg [transition:filter_.2s,transform_.12s] enabled:hover:brightness-110 enabled:active:scale-[.985] disabled:cursor-default ${focusRing}`}
     >
       {loading && (
         <span aria-hidden="true" className="h-[15px] w-[15px] animate-spin rounded-full border-2 border-current border-r-transparent" />
@@ -337,7 +296,7 @@ function FormErrorText({ id, error }: { id: string; error: FormError | null }) {
 
 function SwitchLink({ to, prompt, children }: { to: string; prompt: string; children: ReactNode }) {
   return (
-    <p className="mt-5 text-center text-sm text-qp-muted">
+    <p className="mt-5 text-center text-sm text-qp-muted short:mt-4">
       {prompt}{" "}
       <Link to={to} className={`rounded font-medium text-qp-accent-ink hover:underline ${focusRing}`}>
         {children}
@@ -433,7 +392,7 @@ function SignInForm({ active }: { active: boolean }) {
       <h1 className="text-[28px] font-semibold leading-[1.1] tracking-[-0.02em]">Sign in</h1>
       <p className="mt-2 text-[15px] text-qp-muted">Welcome back to QuickPoll.</p>
 
-      <div className={`mt-8 flex flex-col gap-[18px] ${shaking ? "motion-safe:animate-qp-shake" : ""}`}>
+      <div className={`mt-8 flex flex-col gap-[18px] short:mt-6 short:gap-3.5 ${shaking ? "motion-safe:animate-qp-shake" : ""}`}>
         <Field
           id="signin-email"
           label="Email"
@@ -468,7 +427,7 @@ function SignInForm({ active }: { active: boolean }) {
         {status === "loading" ? "Signing in" : "Sign in"}
       </SubmitButton>
 
-      <div className="mt-5 flex items-center gap-3">
+      <div className="mt-5 flex items-center gap-3 short:hidden">
         <span className="h-px flex-1 bg-qp-line" />
         <span className="text-[13px] text-qp-muted">or</span>
         <span className="h-px flex-1 bg-qp-line" />
@@ -478,11 +437,11 @@ function SignInForm({ active }: { active: boolean }) {
         type="button"
         onClick={handleDemo}
         disabled={busy}
-        className={`mt-5 flex h-12 items-center justify-center gap-2.5 rounded-[10px] border border-qp-fieldline text-base font-semibold text-qp-ink [transition:background-color_.2s,border-color_.2s,transform_.12s] enabled:hover:border-qp-ink enabled:hover:bg-qp-track enabled:active:scale-[.985] disabled:cursor-default ${focusRing}`}
+        className={`mt-5 flex h-12 items-center justify-center gap-2.5 rounded-[10px] border border-qp-fieldline short:mt-3 short:h-11 text-base font-semibold text-qp-ink [transition:background-color_.2s,border-color_.2s,transform_.12s] enabled:hover:border-qp-ink enabled:hover:bg-qp-track enabled:active:scale-[.985] disabled:cursor-default ${focusRing}`}
       >
         Try the demo account
       </button>
-      <p className="mt-2.5 text-center text-[13px] text-qp-muted">
+      <p className="mt-2.5 text-center text-[13px] text-qp-muted short:mt-2">
         Signs you in as <span className="font-brand-mono text-qp-ink">{DEMO_ACCOUNT.email}</span>
       </p>
 
@@ -554,7 +513,7 @@ function SignUpForm({ active }: { active: boolean }) {
       <h1 className="text-[28px] font-semibold leading-[1.1] tracking-[-0.02em]">Create your account</h1>
       <p className="mt-2 text-[15px] text-qp-muted">Make a poll, share the link, watch it fill up.</p>
 
-      <div className={`mt-7 flex flex-col gap-4 ${shaking ? "motion-safe:animate-qp-shake" : ""}`}>
+      <div className={`mt-7 flex flex-col gap-4 short:mt-5 short:gap-3 ${shaking ? "motion-safe:animate-qp-shake" : ""}`}>
         <Field
           id="signup-name"
           label="Name"
@@ -636,8 +595,9 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="qp-auth flex min-h-screen flex-col bg-qp-bg font-brand text-qp-ink">
-      <header className="flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12 lg:py-7 motion-safe:animate-qp-in">
+    // dvh rather than vh: on phones 100vh is taller than the visible area, which alone made the page scroll
+    <div className="qp-ui flex min-h-dvh flex-col bg-qp-bg font-brand text-qp-ink">
+      <header className="flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12 lg:py-7 short:py-3 motion-safe:animate-qp-in">
         <div className="flex items-center gap-2.5">
           <Logo size={28} />
           <span className="text-xl font-semibold tracking-[-0.02em]">QuickPoll</span>
@@ -645,14 +605,16 @@ export default function Login() {
         <ThemeButton />
       </header>
 
-      {/* On lg+ the bars span the full width and the card sits over their right end */}
+      {/* On lg+ the poll fills the left column and the card spans both of its rows
+          beside it, so the page is only as tall as header + card and fits a laptop
+          screen without scrolling */}
       <div className="grid flex-1 lg:grid-cols-[minmax(0,1fr)_auto] lg:grid-rows-[auto_1fr]">
         {isDesktop && <PollPreview />}
 
-        <main className="relative z-10 flex justify-center self-start px-5 pb-10 pt-2 sm:self-center sm:pt-6 lg:col-start-2 lg:row-start-2 lg:px-0 lg:pb-[68px] lg:pr-12 lg:pt-2">
+        <main className="relative z-10 flex justify-center self-start px-5 pb-6 pt-2 sm:self-center sm:pt-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:px-0 lg:pb-7 lg:pr-12 lg:pt-2">
           <div
             style={{ animationDelay: "200ms" }}
-            className="w-full max-w-[400px] rounded-[18px] border border-qp-line bg-qp-card px-6 py-7 shadow-[var(--qp-shadow)] sm:px-9 sm:py-8 lg:w-[var(--qp-card-w)] lg:max-w-none motion-safe:animate-qp-in"
+            className="w-full max-w-[400px] rounded-[18px] border border-qp-line bg-qp-card px-6 py-7 shadow-[var(--qp-shadow)] sm:px-9 sm:py-8 lg:w-[var(--qp-card-w)] lg:max-w-none short:py-5 motion-safe:animate-qp-in"
           >
             <div className="grid">
               <SignInForm active={!signingUp} />

@@ -78,7 +78,10 @@ export interface DiscoverResponseDTO {
   polls: PollDTO[];
   page: number;
   totalPages: number;
+  // Polls matching the search (every live public poll when there's no search)
   totalCount: number;
+  // Every live public poll, ignoring the search
+  stats: { polls: number; votes: number };
 }
 
 export interface CommentsResponseDTO {

@@ -161,15 +161,26 @@ export const getPublicPolls = async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? '12'), 10) || 12));
   const sort: Record<string, 1 | -1> =
-    req.query.sort === 'popular' ? { totalVotesCache: -1 } : { createdAt: -1 };
+    req.query.sort === 'popular' ? { totalVotesCache: -1, createdAt: -1 } : { createdAt: -1 };
 
-  const filter = { isPublic: true, isOpen: true };
-  const [polls, totalCount] = await Promise.all([
+  const live = { isPublic: true, isOpen: true };
+  // Optional case-insensitive search on the question, matched literally
+  const q = String(req.query.q ?? '').trim().slice(0, 100);
+  const filter = q
+    ? { ...live, question: { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }
+    : live;
+
+  const [polls, totalCount, liveStats] = await Promise.all([
     Poll.find(filter)
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit),
     Poll.countDocuments(filter),
+    // Totals across every live public poll, regardless of the search
+    Poll.aggregate<{ polls: number; votes: number }>([
+      { $match: live },
+      { $group: { _id: null, polls: { $sum: 1 }, votes: { $sum: '$totalVotesCache' } } },
+    ]),
   ]);
 
   const withCounts = await attachCounts(polls);
@@ -179,6 +190,7 @@ export const getPublicPolls = async (req: Request, res: Response) => {
     page,
     totalPages: Math.max(1, Math.ceil(totalCount / limit)),
     totalCount,
+    stats: { polls: liveStats[0]?.polls ?? 0, votes: liveStats[0]?.votes ?? 0 },
   });
 };
 

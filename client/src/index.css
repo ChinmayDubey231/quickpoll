@@ -208,8 +208,9 @@ body {
   animation: shimmer 1.8s ease-in-out infinite;
 }
 
-/* Sign-in / sign-up page: its own warm neutrals around the brand orange */
-.qp-auth {
+/* QuickPoll brand palette — warm neutrals around the brand orange. Used by the
+   sign-in page and the signed-in app shell + dashboard. */
+.qp-ui {
   --qp-bg: #f4f4f2;
   --qp-panel: #e9e9e5;
   --qp-card: #ffffff;
@@ -221,6 +222,7 @@ body {
   --qp-bar: #d6d6d0;
   --qp-track: rgba(18, 18, 19, 0.09);
   --qp-error: #c8363b;
+  --qp-errbg: rgba(200, 54, 59, 0.1);
   --qp-shadow: 0 24px 60px -24px rgba(18, 18, 19, 0.25);
   --qp-accent: #ff5b1f;
   /* Ink rather than white on the orange: white is only ~3:1, ink ~6:1 */
@@ -231,7 +233,7 @@ body {
   --qp-card-w: 360px;
 }
 
-.dark .qp-auth {
+.dark .qp-ui {
   --qp-bg: #0d0d0f;
   --qp-panel: #151517;
   --qp-card: #18181b;
@@ -243,6 +245,7 @@ body {
   --qp-bar: #34343a;
   --qp-track: rgba(241, 241, 239, 0.1);
   --qp-error: #ff7a7e;
+  --qp-errbg: rgba(255, 122, 126, 0.12);
   --qp-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.7);
   /* Lifted orange so links and hints stay legible on the dark card */
   --qp-accent-ink: #ff8f66;
@@ -250,7 +253,7 @@ body {
 }
 
 @media (min-width: 1280px) {
-  .qp-auth {
+  .qp-ui {
     --qp-card-w: 400px;
   }
 }

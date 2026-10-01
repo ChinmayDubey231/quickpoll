@@ -6,6 +6,10 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      // Viewports too short for the sign-in page's roomy spacing (most laptops)
+      screens: {
+        short: { raw: '(max-height: 760px)' },
+      },
       colors: {
         primary:                  withOpacity('--color-primary'),
         'primary-container':      withOpacity('--color-primary-container'),
@@ -37,7 +41,7 @@ export default {
         'inverse-surface':        withOpacity('--color-inverse-surface'),
         'inverse-on-surface':     withOpacity('--color-inverse-on-surface'),
         'inverse-primary':        withOpacity('--color-inverse-primary'),
-        // Sign-in page palette — defined on .qp-auth in index.css
+        // Brand palette — defined on .qp-ui in index.css
         qp: {
           bg:          'var(--qp-bg)',
           panel:       'var(--qp-panel)',
@@ -50,6 +54,7 @@ export default {
           bar:         'var(--qp-bar)',
           track:       'var(--qp-track)',
           error:       'var(--qp-error)',
+          errbg:       'var(--qp-errbg)',
           accent:      'var(--qp-accent)',
           'accent-fg': 'var(--qp-accent-fg)',
           'accent-ink':'var(--qp-accent-ink)',
