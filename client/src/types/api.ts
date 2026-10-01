@@ -61,6 +61,13 @@ export interface ReactionCountDTO {
   count: number;
 }
 
+export interface ReactionsResponseDTO {
+  pollId: string;
+  reactions: ReactionCountDTO[];
+  // Emojis the requester has reacted with (only on GET)
+  mine?: string[];
+}
+
 export interface AnalyticsTimelinePointDTO {
   time: string;
   votes: number;

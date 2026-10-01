@@ -12,7 +12,7 @@ import {
   exportPollsCSV,
 } from '../controllers/pollController.js';
 import { getComments, addComment, deleteComment } from '../controllers/commentController.js';
-import { getReactions, addReaction } from '../controllers/reactionController.js';
+import { getReactions, addReaction, removeReaction } from '../controllers/reactionController.js';
 
 const router = Router();
 
@@ -29,6 +29,7 @@ router.get('/:id/comments', apiLimiter, getComments);
 router.post('/:id/comments', commentLimiter, addComment);
 router.get('/:id/reactions', apiLimiter, getReactions);
 router.post('/:id/reactions', apiLimiter, addReaction);
+router.delete('/:id/reactions/:emoji', apiLimiter, removeReaction);
 
 // Creator — JWT required
 router.get('/', auth, getMyPolls);
