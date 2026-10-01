@@ -6,16 +6,16 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   arrayMove,
   useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import type { OptionDTO } from '../types/api';
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { OptionDTO } from "../types/api";
 
 interface SortableOptionProps {
   id: string;
@@ -34,22 +34,29 @@ function SortableOption({ id, index, text }: SortableOptionProps) {
     <li
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border bg-surface-container transition-colors ${
-        isDragging ? 'opacity-60 border-primary' : 'border-outline-variant'
+      className={`relative flex min-h-[60px] items-center gap-3.5 rounded-xl border bg-qp-bg py-2.5 pl-[18px] pr-2 [transition:border-color_.2s,box-shadow_.2s] ${
+        isDragging ? "z-10 border-qp-accent shadow-[0_12px_32px_-12px_rgba(0,0,0,.45)]" : "border-qp-line"
       }`}
     >
-      <span className="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold font-mono flex-shrink-0">
+      <span className="grid h-7 w-7 flex-none place-items-center rounded-full border border-qp-line font-brand-mono text-xs font-bold tabular-nums text-qp-muted">
         {index + 1}
       </span>
-      <span className="flex-1 text-sm text-on-surface">{text}</span>
+      <span className="flex-1 text-lg font-medium leading-snug">{text}</span>
       <button
         type="button"
         {...attributes}
         {...listeners}
-        aria-label={`Drag to reorder ${text}`}
-        className="p-2 -mr-2 text-on-surface-variant hover:text-on-surface cursor-grab active:cursor-grabbing touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+        aria-label={`Move ${text}, ranked ${index + 1}`}
+        className="grid h-11 w-11 flex-none cursor-grab touch-none place-items-center rounded-lg text-qp-muted transition-colors hover:bg-qp-track hover:text-qp-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-qp-accent active:cursor-grabbing"
       >
-        <span className="material-symbols-outlined text-[20px]">drag_indicator</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="9" cy="6" r="1.6" />
+          <circle cx="15" cy="6" r="1.6" />
+          <circle cx="9" cy="12" r="1.6" />
+          <circle cx="15" cy="12" r="1.6" />
+          <circle cx="9" cy="18" r="1.6" />
+          <circle cx="15" cy="18" r="1.6" />
+        </svg>
       </button>
     </li>
   );
@@ -61,8 +68,8 @@ interface RankedChoiceVoterProps {
   onChange: (order: number[]) => void;
 }
 
-// Full-permutation ranked-choice voting UI: drag (or use arrow keys while
-// focused on the handle) to reorder options from most to least preferred.
+// Full-permutation ranked-choice voting UI: drag (or, with the handle focused,
+// Space then the arrow keys) to reorder options from most to least preferred.
 export default function RankedChoiceVoter({ options, order, onChange }: RankedChoiceVoterProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -80,16 +87,16 @@ export default function RankedChoiceVoter({ options, order, onChange }: RankedCh
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={order.map(String)} strategy={verticalListSortingStrategy}>
-        <ul className="space-y-2">
+        <ol className="flex flex-col gap-2.5">
           {order.map((optionIndex, position) => (
             <SortableOption
               key={optionIndex}
               id={String(optionIndex)}
               index={position}
-              text={options[optionIndex]?.text ?? ''}
+              text={options[optionIndex]?.text ?? ""}
             />
           ))}
-        </ul>
+        </ol>
       </SortableContext>
     </DndContext>
   );
