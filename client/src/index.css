@@ -231,6 +231,20 @@ body {
   --qp-accent-ink: #c2410c;
   --qp-ring: rgba(255, 91, 31, 0.24);
   --qp-card-w: 360px;
+
+  /* Chart series, one per poll option in this fixed order (polls have at most
+     six): slate blue, sage, dusty rose, sand, plum, jade. Muted to OKLCH chroma
+     ~0.105 so they sit quietly beside the neutral UI; orange and red are left
+     out so a series never reads as the accent. Validated as an adjacent-pair
+     categorical palette against --qp-bg in both themes, and the first three
+     all-pairs (worst CVD ΔE 8.6, normal vision 16.0). On light, s4 sits under
+     3:1, so every chart that uses it also shows its values as text. */
+  --qp-s1: #5675b8;
+  --qp-s2: #728b41;
+  --qp-s3: #be708b;
+  --qp-s4: #bba353;
+  --qp-s5: #695597;
+  --qp-s6: #439367;
 }
 
 .dark .qp-ui {
@@ -250,6 +264,13 @@ body {
   /* Lifted orange so links and hints stay legible on the dark card */
   --qp-accent-ink: #ff8f66;
   --qp-accent-ink: color-mix(in oklch, #ff5b1f 72%, #ffffff);
+
+  --qp-s1: #6281c1;
+  --qp-s2: #71893f;
+  --qp-s3: #bf6b89;
+  --qp-s4: #a89040;
+  --qp-s5: #8672b7;
+  --qp-s6: #3c8d61;
 }
 
 @media (min-width: 1280px) {

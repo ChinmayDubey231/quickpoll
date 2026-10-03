@@ -68,15 +68,19 @@ export interface ReactionsResponseDTO {
   mine?: string[];
 }
 
+// One 15-minute window that received votes (empty windows are left out)
 export interface AnalyticsTimelinePointDTO {
+  // Start of the window, ISO timestamp
   time: string;
+  // Ballots cast in the window
   votes: number;
+  // Per option: every pick on multi-select, first preference on ranked
+  byOption: number[];
 }
 
 export interface AnalyticsDTO {
   totalVotes: number;
   uniqueVoters: number;
-  peakMinute: string | null;
   timeline: AnalyticsTimelinePointDTO[];
   irv: IrvResultDTO | null;
 }

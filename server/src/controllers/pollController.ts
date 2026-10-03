@@ -8,6 +8,7 @@ import redis from '../config/redis.js';
 import { pollExpiryQueue } from '../config/bullmq.js';
 import { getIO } from '../config/socket.js';
 import { computeIRV } from '../utils/irv.js';
+import { buildTimeline } from '../utils/timeline.js';
 import type { IPoll, PollType } from '../types/models.js';
 import type { OptionCount } from '../types/socket.js';
 
@@ -280,7 +281,8 @@ export const deletePoll = async (req: Request, res: Response) => {
 };
 
 // ─── GET /api/polls/:id/analytics ─────────────────────────────────────────────
-// Creator only — timeline data, peak minute, unique voter count
+// Creator only — vote timeline per option, unique voter count, runoff rounds.
+// Times go out as ISO timestamps so the creator sees them in their own time zone.
 export const getPollAnalytics = async (req: Request, res: Response) => {
   const poll = await Poll.findById(req.params.id);
   if (!poll) return res.status(404).json({ message: 'Poll not found' });
@@ -298,42 +300,7 @@ export const getPollAnalytics = async (req: Request, res: Response) => {
   );
   const uniqueVoters = uniqueFingerprints.size || totalVotes;
 
-  // Build 15-minute bucket timeline using MongoDB aggregation
-  const timeline = await Vote.aggregate([
-    { $match: { pollId: poll._id } },
-    {
-      $group: {
-        _id: {
-          $dateTrunc: { date: '$createdAt', unit: 'minute', binSize: 15 },
-        },
-        votes: { $sum: 1 },
-      },
-    },
-    { $sort: { _id: 1 } },
-    {
-      $project: {
-        _id: 0,
-        time: '$_id',
-        votes: 1,
-      },
-    },
-  ]);
-
-  // Format timestamps to readable strings
-  const formattedTimeline = timeline.map((t) => ({
-    time: new Date(t.time).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }),
-    votes: t.votes,
-  }));
-
-  // Peak minute
-  const peak = formattedTimeline.reduce(
-    (max: { time: string; votes: number } | null, t) => (t.votes > (max?.votes ?? 0) ? t : max),
-    null
-  );
+  const timeline = buildTimeline(votes, poll.pollType, poll.options.length);
 
   let irv = null;
   if (poll.pollType === 'ranked') {
@@ -346,8 +313,7 @@ export const getPollAnalytics = async (req: Request, res: Response) => {
   res.json({
     totalVotes,
     uniqueVoters,
-    peakMinute: peak?.time ?? null,
-    timeline: formattedTimeline,
+    timeline,
     irv,
   });
 };
