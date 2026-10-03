@@ -40,6 +40,11 @@ export default function Layout({ children }: { children: ReactNode }) {
         .toUpperCase()
     : "?";
 
+  // Straight to where "/" would redirect. The "/" route sits outside this
+  // shell's layout route, so linking there unmounts the header and sidebar for
+  // the redirect and remounts them, replaying their entrance animation.
+  const home = isLoggedIn ? "/dashboard" : "/login";
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="qp-ui min-h-screen bg-qp-bg">
@@ -49,7 +54,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="fixed inset-x-0 top-0 z-50 flex h-[76px] items-center justify-between gap-4 border-b border-qp-line bg-qp-bg px-[clamp(16px,2.5vw,32px)] font-brand text-qp-ink"
         >
-          <Link to="/" className={`flex items-center gap-2.5 rounded-lg ${focusRing}`}>
+          <Link to={home} className={`flex items-center gap-2.5 rounded-lg ${focusRing}`}>
             <motion.span
               whileHover={{ rotate: -6, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
