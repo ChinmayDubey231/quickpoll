@@ -674,11 +674,11 @@ export default function CreatePoll() {
 
         {/* ---------------------------- pinned action bar ---------------------------- */}
         {/* Sticks to the bottom of the screen while the form scrolls; on phones it
-            sits on top of the 64px bottom nav */}
-        <motion.div
-          variants={fadeUp}
-          className="sticky bottom-16 z-20 mt-8 flex items-center gap-3 border-t border-qp-line bg-qp-bg py-4 lg:bottom-0 lg:pb-6"
-        >
+            sits on top of the 64px bottom nav. Screen chrome, like the header, so
+            it arrives with the page rather than as the last step of the staggered
+            entrance: fading in late, it let the form show through its spot and
+            then slid up over it, which read as a flicker. */}
+        <div className="sticky bottom-16 z-20 mt-8 flex items-center gap-3 border-t border-qp-line bg-qp-bg py-4 lg:bottom-0 lg:pb-6">
           <span className="mr-auto hidden text-sm text-qp-muted sm:block">
             {filledCount} of {options.length} options filled · {typeInfo.label.toLowerCase()}
           </span>
@@ -725,7 +725,7 @@ export default function CreatePoll() {
             </AnimatePresence>
             <span>{status === "loading" ? "Creating" : status === "done" ? "Created" : "Create poll"}</span>
           </button>
-        </motion.div>
+        </div>
       </form>
 
       {/* Lifted clear of the action bar (and the bottom nav on phones) */}
